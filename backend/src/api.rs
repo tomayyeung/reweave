@@ -1,9 +1,12 @@
+use std::sync::Arc;
+
 use axum::{
+    Json, Router,
     routing::{get, post},
-    Json,
-    Router,
 };
 use serde::{Deserialize, Serialize};
+
+use crate::words::Trie;
 
 #[derive(Serialize)]
 struct Message {
@@ -29,8 +32,9 @@ async fn greet(Json(input): Json<Input>) -> Json<Message> {
     })
 }
 
-pub fn router() -> Router {
+pub fn router(full_word_list: Arc<Trie>) -> Router {
     Router::new()
         .route("/api/hello", get(hello))
         .route("/api/greet", post(greet))
+        .with_state(full_word_list)
 }
