@@ -66,8 +66,8 @@ impl Trie {
         this
     }
 
-    #[allow(unused)]
     /// Search for all words in the Trie starting with prefix
+    #[allow(unused)]
     fn search(&self, prefix: &str) -> Vec<String> {
         let mut curr = &self.root;
         for b in prefix.bytes() {
@@ -85,7 +85,17 @@ impl Trie {
 
     /// Are there words in the Trie starting with the given prefix?
     #[allow(unused)]
-    fn is_prefix() {}
+    fn is_prefix(&self, prefix: &str) -> bool {
+        let mut curr = &self.root;
+        for b in prefix.bytes() {
+            let Some(node) = &curr.children[idx(b)] else {
+                return false;
+            };
+            curr = node;
+        }
+
+        true
+    }
 }
 
 pub fn _find_words(_board: Board, _word_list: Trie) -> Vec<String> {
@@ -132,5 +142,21 @@ mod tests {
 
         let trie = Trie::new(words);
         trie.search("H");
+    }
+
+    #[test]
+    fn is_valid_prefix() {
+        let words = vec!["test", "teach", "toaster"];
+
+        let trie = Trie::new(words);
+        assert!(trie.is_prefix("te"));
+    }
+
+    #[test]
+    fn is_not_valid_prefix() {
+        let words = vec!["test", "teach", "toaster"];
+
+        let trie = Trie::new(words);
+        assert!(!trie.is_prefix("ta"));
     }
 }
