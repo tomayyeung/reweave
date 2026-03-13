@@ -1,22 +1,29 @@
-import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from "react";
+// import reactLogo from "./assets/react.svg";
+// import viteLogo from "./assets/vite.svg";
+// import heroImg from "./assets/hero.png";
+
+import { Board } from "./components/Board";
+import { WordList } from "./components/WordList"
+
+// import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  // const [count, setCount] = useState(0)
   const [msg, setMsg] = useState("tmp");
 
   useEffect(() => {
     fetch("/api/hello")
-      .then(res => res.json())
-      .then(data => setMsg(data.text))
-  }, [])
+      .then((res) => res.json())
+      .then((data) => setMsg(data.text));
+  }, []);
 
   return (
     <>
-      <section id="center">
+      <p>Message: {msg}</p>
+      <Board />
+      <WordList />
+      {/* <section id="center">
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
           <img src={reactLogo} className="framework" alt="React logo" />
@@ -123,9 +130,9 @@ function App() {
       </section>
 
       <div className="ticks"></div>
-      <section id="spacer"></section>
+      <section id="spacer"></section> */}
     </>
-  )
+  );
 }
 
-export default App
+export default App;

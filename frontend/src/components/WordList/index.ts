@@ -1,0 +1,1 @@
+export { WordList } from "./WordList";

@@ -1,0 +1,5 @@
+.board {
+  margin: auto;
+  border: 2px dotted black;
+  padding: 5px;
+}
