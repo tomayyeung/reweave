@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-mod api;
-mod board;
-mod words;
+use reweave::{api, words};
 
 #[tokio::main]
 async fn main() {

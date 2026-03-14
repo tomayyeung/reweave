@@ -1,4 +1,4 @@
-use crate::board::Board;
+use crate::board::{Board, BoardCell};
 
 /// For efficiency, our Trie uses a simply array to keep track of children
 /// This helper function converts a byte to an index in an array of children
@@ -67,6 +67,7 @@ impl Trie {
     }
 
     /// Search for all words in the Trie starting with prefix
+    /// not necessary for this game?
     #[allow(unused)]
     fn search(&self, prefix: &str) -> Vec<String> {
         let mut curr = &self.root;
@@ -83,8 +84,21 @@ impl Trie {
             .collect()
     }
 
+    /// Is this a word in the Trie?
+    fn is_word(&self, word: &str) -> bool {
+        let mut curr = &self.root;
+        for b in word.bytes() {
+            let Some(node) = &curr.children[idx(b)] else {
+                return false;
+            };
+            curr = node;
+        }
+
+        curr.is_word
+    }
+
     /// Are there words in the Trie starting with the given prefix?
-    #[allow(unused)]
+    /// Useful for discarding unused prefixes to limit DFS
     fn is_prefix(&self, prefix: &str) -> bool {
         let mut curr = &self.root;
         for b in prefix.bytes() {
@@ -98,8 +112,97 @@ impl Trie {
     }
 }
 
-pub fn _find_words(_board: Board, _word_list: Trie) -> Vec<String> {
-    todo!()
+/// Given a Board of letters and a word list, find all words
+pub fn find_words(board: &Board, word_list: &Trie) -> Vec<String> {
+    let mut out = vec![];
+
+    // Use DFS to find all words in the board
+    let cells: Vec<BoardCell> = (0..board.height)
+        .flat_map(|i| {
+            (0..board.width)
+                .map(|j| BoardCell(i, j))
+                .collect::<Vec<BoardCell>>()
+        })
+        .collect();
+
+    for c in cells {
+        out.append(&mut find_words_rec(
+            c,
+            &mut "".to_string(),
+            &mut vec![],
+            board,
+            word_list,
+        ));
+    }
+
+    out
+}
+
+/// Adjacent cells
+const ADJ: [(isize, isize); 8] = [
+    (1, 1),
+    (1, 0),
+    (1, -1),
+    (0, -1),
+    (-1, -1),
+    (-1, 0),
+    (-1, 1),
+    (0, 1),
+];
+fn find_words_rec(
+    curr_cell: BoardCell,
+    curr_s: &mut String,
+    visited: &mut Vec<BoardCell>,
+    board: &Board,
+    word_list: &Trie,
+) -> Vec<String> {
+    let mut out = vec![];
+
+    // Empty cell
+    let Some(c) = board.get(curr_cell) else {
+        return vec![];
+    };
+
+    // Add to current string and process
+    curr_s.push(c);
+    if !word_list.is_prefix(curr_s) {
+        return vec![];
+    }
+    if word_list.is_word(curr_s) {
+        out.push(curr_s.clone());
+    }
+
+    // Add cell to visited and continue traversing
+    visited.push(curr_cell);
+    for (dx, dy) in ADJ {
+        if curr_cell.0 == 0 && dx == -1_isize {
+            continue;
+        }
+        if curr_cell.0 == board.width - 1 && dx == 1 {
+            continue;
+        }
+        if curr_cell.1 == 0 && dy == -1_isize {
+            continue;
+        }
+        if curr_cell.1 == board.height - 1 && dy == 1 {
+            continue;
+        }
+
+        let next_cell = BoardCell(
+            (curr_cell.0 as isize + dx) as usize,
+            (curr_cell.1 as isize + dy) as usize,
+        );
+
+        if visited.contains(&next_cell) {
+            continue;
+        }
+
+        out.append(&mut find_words_rec(
+            next_cell, curr_s, visited, board, word_list,
+        ));
+    }
+
+    out
 }
 
 #[cfg(test)]
