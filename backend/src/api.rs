@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     Json, Router,
-    extract::State,
+    extract::{Query, State},
     routing::{get, post},
 };
 use serde::{Deserialize, Serialize};
@@ -45,10 +45,21 @@ async fn test_board(State(word_list): State<Arc<Trie>>) -> Json<Vec<String>> {
     Json(find_words(&board, &word_list))
 }
 
+#[derive(Deserialize)]
+pub struct BoardParam {}
+
+async fn find_from_board(
+    State(word_list): State<Arc<Trie>>,
+    Query(param): Query<BoardParam>,
+) -> Json<Vec<String>> {
+    Json(find_words(&Board::from_board_param(&param), &word_list))
+}
+
 pub fn router(full_word_list: Arc<Trie>) -> Router {
     Router::new()
         .route("/api/hello", get(hello))
         .route("/api/greet", post(greet))
         .route("/api/test", get(test_board))
+        .route("/api/find-from-board", get(find_from_board))
         .with_state(full_word_list)
 }

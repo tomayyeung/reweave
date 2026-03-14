@@ -1,3 +1,5 @@
+use crate::api::BoardParam;
+
 /// A cell of the board, indexed by its coordinates
 #[derive(Clone, Copy, PartialEq)]
 #[allow(unused)]
@@ -49,6 +51,10 @@ impl Board {
             height,
             cells,
         }
+    }
+
+    pub fn from_board_param(_board_param: &BoardParam) -> Self {
+        todo!()
     }
 
     pub fn get(&self, cell: BoardCell) -> Option<char> {
