@@ -12,14 +12,14 @@ use crate::{
     words::{Trie, find_words},
 };
 
-#[derive(Serialize)]
-struct Message {
-    text: String,
+#[derive(Serialize, Deserialize)]
+pub struct Message {
+    pub text: String,
 }
 
-#[derive(Deserialize)]
-struct Input {
-    name: String,
+#[derive(Serialize, Deserialize)]
+pub struct GreetInput {
+    pub name: String,
 }
 
 /// This will be a GET endpoint
@@ -30,7 +30,7 @@ async fn hello() -> Json<Message> {
 }
 
 /// This will be a POST endpoint
-async fn greet(Json(input): Json<Input>) -> Json<Message> {
+async fn greet(Json(input): Json<GreetInput>) -> Json<Message> {
     Json(Message {
         text: format!("Hello {}", input.name),
     })
@@ -60,6 +60,6 @@ pub fn router(full_word_list: Arc<Trie>) -> Router {
         .route("/api/hello", get(hello))
         .route("/api/greet", post(greet))
         .route("/api/test", get(test_board))
-        .route("/api/find-from-board", get(find_from_board))
+        .route("/api/find-from-board", post(find_from_board))
         .with_state(full_word_list)
 }

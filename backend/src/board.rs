@@ -1,12 +1,10 @@
 use crate::api::BoardParam;
 
 /// A cell of the board, indexed by its coordinates
-#[derive(Clone, Copy, PartialEq)]
-#[allow(unused)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BoardCell(pub usize, pub usize);
 
 /// A board of letters, some of which might not be filled in
-#[allow(unused)]
 pub struct Board {
     pub width: usize,
     pub height: usize,
@@ -31,6 +29,7 @@ impl Board {
                 // Empty cell
                 if *c == ' ' {
                     row.push(None);
+                    continue;
                 }
 
                 // Check if valid char; if so, add to board
