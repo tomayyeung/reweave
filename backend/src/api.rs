@@ -8,8 +8,8 @@ use axum::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    board::Board,
-    words::{Trie, find_words},
+    board::{Board, find_words},
+    words::Trie,
 };
 
 #[derive(Serialize, Deserialize)]
