@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 // import heroImg from "./assets/hero.png";
 
 import { Board } from "./components/Board";
-import { WordList } from "./components/WordList"
+import { WordList } from "./components/WordList";
+import { Wrapper } from "./components/Wrapper";
 
 // import "./App.css";
 
@@ -21,8 +22,16 @@ function App() {
   return (
     <>
       <p>Message: {msg}</p>
-      <Board />
-      <WordList />
+      <Wrapper>
+        <Board
+          board={{
+            width: 3,
+            height: 3,
+            letters: "abcdefghi",
+          }}
+        />
+        <WordList />
+      </Wrapper>
       {/* <section id="center">
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
