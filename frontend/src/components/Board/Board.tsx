@@ -15,22 +15,16 @@ function Tile({ letter }: { letter: string }) {
 }
 
 export function Board({ board }: { board: BoardData }) {
-  if (board.width * board.height != board.letters.length) {
-    throw new Error("Invalid board size for given letters");
-  }
-
   return (
-      <div className={styles.board}>
-        <div
-          className={styles.boardGrid}
-          style={{
-            gridTemplateColumns: `repeat(${board.height}, 1fr)`,
-          }}
-        >
-          {[...board.letters].map((letter, i) => (
-            <Tile key={i} letter={letter.toUpperCase()} />
-          ))}
-        </div>
-      </div>
+    <div
+      className={styles.board}
+      style={{
+        gridTemplateColumns: `repeat(${board.height}, 1fr)`,
+      }}
+    >
+      {[...board.letters].map((letter, i) => (
+        <Tile key={i} letter={letter.toUpperCase()} />
+      ))}
+    </div>
   );
 }
