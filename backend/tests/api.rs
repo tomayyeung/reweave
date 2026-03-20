@@ -90,3 +90,27 @@ async fn test_board() {
 
     assert_eq!(found_words, vec!["both", "broth", "foul"]);
 }
+
+#[tokio::test]
+async fn test_find_from_board() {
+    let app = create_test_router();
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/find?width=2&height=2&letters=otbh")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert!(response.status().is_success());
+
+    // let body = to_bytes(response.into_body(), 10_000).await.unwrap();
+    let body = response.into_body().collect().await.unwrap().to_bytes();
+    let found_words: Vec<String> = serde_json::from_slice(&body).unwrap();
+
+    // assert!(result.contains(&"cat".to_string()));
+    assert_eq!(found_words, vec!["both"]);
+}

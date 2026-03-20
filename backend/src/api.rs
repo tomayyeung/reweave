@@ -46,13 +46,21 @@ async fn test_board(State(word_list): State<Arc<Trie>>) -> Json<Vec<String>> {
 }
 
 #[derive(Deserialize)]
-pub struct BoardParam {}
+pub struct BoardParam {
+    width: usize,
+    height: usize,
+    letters: String,
+}
 
 async fn find_from_board(
     State(word_list): State<Arc<Trie>>,
     Query(param): Query<BoardParam>,
 ) -> Json<Vec<String>> {
-    Json(find_words(&Board::from_board_param(&param), &word_list))
+    println!("Letters: {}", param.letters);
+    Json(find_words(
+        &Board::create(param.width, param.height, param.letters.chars().collect()),
+        &word_list,
+    ))
 }
 
 pub fn router(full_word_list: Arc<Trie>) -> Router {
@@ -60,6 +68,6 @@ pub fn router(full_word_list: Arc<Trie>) -> Router {
         .route("/api/hello", get(hello))
         .route("/api/greet", post(greet))
         .route("/api/test", get(test_board))
-        .route("/api/find-from-board", post(find_from_board))
+        .route("/api/find", get(find_from_board))
         .with_state(full_word_list)
 }

@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use crate::api::BoardParam;
 use crate::words::*;
 
 /// A cell of the board, indexed by its coordinates
@@ -23,10 +22,10 @@ impl Board {
 
         let mut cells: Vec<Vec<Option<char>>> = Vec::new();
         let mut i = 0;
-        for _ in 0..height {
+        for j in 0..height {
             let mut row = Vec::new();
 
-            for _ in 0..width {
+            for k in 0..width {
                 let c = chars.get(i).unwrap();
 
                 // Empty cell
@@ -37,7 +36,8 @@ impl Board {
 
                 // Check if valid char; if so, add to board
                 if c.is_ascii_lowercase() {
-                    row.push(Some(*c))
+                    row.push(Some(*c));
+                    println!("At ({}, {}): {}", j, k, c);
                 } else {
                     panic!("Invalid character when creating board {c}");
                 }
@@ -53,10 +53,6 @@ impl Board {
             height,
             cells,
         }
-    }
-
-    pub fn from_board_param(_board_param: &BoardParam) -> Self {
-        todo!()
     }
 
     pub fn get(&self, cell: BoardCell) -> Option<char> {
@@ -118,17 +114,20 @@ fn find_words_rec(
         return HashSet::new();
     };
 
-    // Process current string
-    if !word_list.is_prefix(curr_s) {
-        return HashSet::new();
-    }
-    if word_list.is_word(curr_s) {
-        out.insert(curr_s.clone());
-    }
-
     // Add to curr string and visited
     curr_s.push(c);
     visited.push(curr_cell);
+
+    // Process current string
+    if !word_list.is_prefix(curr_s) {
+        curr_s.pop();
+        visited.pop();
+        return HashSet::new();
+    }
+
+    if word_list.is_word(curr_s) {
+        out.insert(curr_s.clone());
+    }
 
     // Traverse adjacent cells
     for (dx, dy) in ADJ {
@@ -201,5 +200,16 @@ mod tests {
         found_words.sort();
 
         assert_eq!(found_words, vec!["both", "broth", "foul"]);
+    }
+
+    #[test]
+    fn find4() {
+        let full_word_list = Trie::new(vec!["both"]);
+        let board = Board::create(2, 2, vec!['o', 't', 'b', 'h']);
+
+        let mut found_words = find_words(&board, &full_word_list);
+        found_words.sort();
+
+        assert_eq!(found_words, vec!["both"]);
     }
 }
