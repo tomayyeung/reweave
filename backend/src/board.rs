@@ -29,7 +29,7 @@ impl Board {
                 let c = chars.get(i).unwrap();
 
                 // Empty cell
-                if *c == ' ' {
+                if *c == '_' {
                     row.push(None);
                     continue;
                 }
@@ -194,7 +194,7 @@ mod tests {
     #[test]
     fn find3() {
         let full_word_list = Trie::new(vec!["both", "broth", "foul", "trouble", "blur"]);
-        let board = Board::create(3, 3, vec!['t', 'r', 'b', 'h', 'o', 'u', 'f', 'l', ' ']);
+        let board = Board::create(3, 3, vec!['t', 'r', 'b', 'h', 'o', 'u', 'f', 'l', '_']);
 
         let mut found_words = find_words(&board, &full_word_list);
         found_words.sort();

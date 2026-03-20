@@ -28,7 +28,7 @@ function Tile({ letter, idx, updateSelectedTile, isSelected }: TileProps) {
         updateSelectedTile(idx);
       }}
     >
-      <span className={styles.tileLetter}>{letter}</span>
+      <span className={styles.tileLetter}>{letter === '_' ? ' ' : letter}</span>
     </div>
   );
 }
@@ -46,7 +46,7 @@ export function Board({ board, boardLetters, setBoardLetters }: BoardProps) {
       if (/^[a-zA-Z]$/.test(e.key)) {
         newChar = e.key;
       } else if (e.key === "Backspace") {
-        newChar = " ";
+        newChar = "_";
       } else {
         return;
       }
