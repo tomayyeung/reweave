@@ -37,7 +37,7 @@ impl Board {
                 // Check if valid char; if so, add to board
                 if c.is_ascii_lowercase() {
                     row.push(Some(*c));
-                    println!("At ({}, {}): {}", j, k, c);
+                    // println!("At ({}, {}): {}", j, k, c);
                 } else {
                     panic!("Invalid character when creating board {c}");
                 }

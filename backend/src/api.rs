@@ -56,7 +56,7 @@ async fn find_from_board(
     State(word_list): State<Arc<Trie>>,
     Query(param): Query<BoardParam>,
 ) -> Json<Vec<String>> {
-    println!("Letters: {}", param.letters);
+    // println!("Letters: {}", param.letters);
     Json(find_words(
         &Board::create(param.width, param.height, param.letters.chars().collect()),
         &word_list,
