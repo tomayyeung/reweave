@@ -27,21 +27,15 @@ impl Board {
 
             for _ in 0..width {
                 let c = chars.get(i).unwrap();
+                i += 1;
 
-                // Empty cell
-                if *c == '_' {
+                if *c == '_' { // Empty cell
                     row.push(None);
-                    continue;
-                }
-
-                // Check if valid char; if so, add to board
-                if c.is_ascii_lowercase() {
+                } else if c.is_ascii_lowercase() { // Is valid letter
                     row.push(Some(*c));
                 } else {
                     panic!("Invalid character when creating board {c}");
                 }
-
-                i += 1;
             }
 
             cells.push(row);
@@ -81,6 +75,8 @@ pub fn find_words(board: &Board, word_list: &Trie) -> Vec<String> {
             word_list,
         ));
     }
+
+    println!("{:?}", out_hash_set);
 
     out_hash_set.into_iter().collect()
 }
@@ -134,13 +130,13 @@ fn find_words_rec(
         if curr_cell.0 == 0 && dx == -1_isize {
             continue;
         }
-        if curr_cell.0 == board.width - 1 && dx == 1 {
+        if curr_cell.0 == board.height - 1 && dx == 1 {
             continue;
         }
         if curr_cell.1 == 0 && dy == -1_isize {
             continue;
         }
-        if curr_cell.1 == board.height - 1 && dy == 1 {
+        if curr_cell.1 == board.width - 1 && dy == 1 {
             continue;
         }
 
@@ -210,5 +206,16 @@ mod tests {
         found_words.sort();
 
         assert_eq!(found_words, vec!["both"]);
+    }
+
+    #[test]
+    fn find5() {
+        let full_word_list = Trie::new(vec!["throb"]);
+        let board = Board::create(3, 3, vec!['t', 'h', 'r', '_', '_', 'o', '_', '_', 'b']);
+
+        let mut found_words = find_words(&board, &full_word_list);
+        found_words.sort();
+
+        assert_eq!(found_words, vec!["throb"]);
     }
 }

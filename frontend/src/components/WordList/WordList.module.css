@@ -1,0 +1,11 @@
+.wordList {
+  height: 600px;
+  margin: 0 10px;
+  font-family: "Lato";
+  font-size: large;
+  overflow: auto;
+}
+
+.lengthLabel {
+  font-weight: bold;
+}
