@@ -8,7 +8,7 @@ function App() {
   const w = 4;
   const h = 4;
 
-  const [boardLetters, setBoardLetters] = useState("_".repeat(w*h)); // empty spaces
+  const [boardLetters, setBoardLetters] = useState("_".repeat(w * h)); // empty spaces
   const [words, setWords] = useState([]);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ function App() {
         .then((res) => res.json())
         .then((data) => {
           // console.log(data)
-          setWords(data)
+          setWords(data);
         });
     };
 
@@ -26,9 +26,10 @@ function App() {
   }, [boardLetters]);
 
   return (
-    <>
+    <main>
       <Wrapper>
         <Board
+          boardType="Create"
           board={{
             width: w,
             height: h,
@@ -37,9 +38,37 @@ function App() {
           boardLetters={boardLetters}
           setBoardLetters={setBoardLetters}
         />
-        <WordList words={words}/>
+        <WordList words={words} />
       </Wrapper>
-    </>
+
+      <form
+        // className={styles.form}
+        action={async (formData) => {
+          const res = await fetch("/api/create_puzzle", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              puzzle_id: formData.get("puzzle_name"),
+              width: w,
+              height: h,
+              letters: boardLetters,
+              words: words,
+            }),
+          });
+
+          console.log(res);
+          // const data = await res.json();
+          // console.log(data);
+        }}
+        autoComplete="off"
+      >
+        <label htmlFor="puzzle_name">Puzzle name</label>
+        <input name="puzzle_name" />
+        <button type="submit">Submit puzzle</button>
+      </form>
+    </main>
   );
 }
 

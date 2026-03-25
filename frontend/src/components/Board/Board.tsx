@@ -9,6 +9,7 @@ type TileProps = {
 };
 
 type BoardProps = {
+  boardType: "Create" | "Play",
   board: BoardData;
   boardLetters: string;
   setBoardLetters: React.Dispatch<React.SetStateAction<string>>;
@@ -33,7 +34,7 @@ function Tile({ letter, idx, updateSelectedTile, isSelected }: TileProps) {
   );
 }
 
-export function Board({ board, boardLetters, setBoardLetters }: BoardProps) {
+export function Board({ boardType, board, boardLetters, setBoardLetters }: BoardProps) {
   const [selectedTile, setSelectedTile] = useState(-1);
 
   useEffect(() => {
@@ -47,6 +48,8 @@ export function Board({ board, boardLetters, setBoardLetters }: BoardProps) {
         newChar = e.key;
       } else if (e.key === "Backspace") {
         newChar = "_";
+      } else if (e.key === "Space" && boardType === "Create") {
+        newChar = "#";
       } else {
         return;
       }

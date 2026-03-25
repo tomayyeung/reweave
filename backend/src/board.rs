@@ -95,7 +95,7 @@ pub fn find_words(board: &Board, word_list: &Trie) -> Vec<String> {
         ));
     }
 
-    println!("{:?}", out_hash_set);
+    // println!("{:?}", out_hash_set);
 
     out_hash_set.into_iter().collect()
 }
