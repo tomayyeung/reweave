@@ -8,6 +8,9 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  resolve: {
+    tsconfigPaths: true,
+  },
   server: {
     proxy: {
       "/api": "http://localhost:3000"
