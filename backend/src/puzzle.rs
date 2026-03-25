@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::error::Error;
 use std::fs::File;
 
 use serde::{Deserialize, Serialize};
@@ -17,7 +18,7 @@ pub struct Words {
 
 /// A list of words that the player uses to create
 /// a board.
-#[derive(Default, Serialize)]
+#[derive(Clone, Default, Deserialize, Serialize)]
 pub struct Puzzle {
     pub width: usize,
     pub height: usize,
@@ -40,6 +41,8 @@ impl Puzzle {
         }
     }
 
+    /// Create a puzzle from a starting board and a list of words
+    /// For holes in the puzzle use '#'
     pub fn create(
         width: usize,
         height: usize,
@@ -90,6 +93,12 @@ impl Puzzle {
     pub fn to_file(&self, path: &str) {
         let file = File::create(path).unwrap();
         serde_json::to_writer(file, &self).unwrap();
+    }
+
+    pub fn from_file(path: &str) -> Result<Self, Box<dyn Error>> {
+        let data = File::open(path)?;
+        let puzzle = serde_json::from_reader(data)?;
+        Ok(puzzle)
     }
 }
 

@@ -8,6 +8,7 @@ use tower::ServiceExt;
 
 use reweave::{api, board, puzzle, words};
 
+/// Create a basic test router with a small word list
 fn create_test_router1() -> Router {
     let full_word_list = Arc::new(words::Trie::new(vec![
         "both", "broth", "foul", "trouble", "blur",
@@ -17,6 +18,7 @@ fn create_test_router1() -> Router {
     api::router(full_word_list, all_puzzles)
 }
 
+/// Create a basic test router with a small word list and a puzzle
 fn create_test_router2() -> Router {
     let full_word_list = Arc::new(words::Trie::new(vec![
         "bot", "hot", "tho", "too", "both", "hoot",
@@ -142,7 +144,7 @@ async fn test_puzzle() {
     let response = app
         .oneshot(
             Request::builder()
-                .uri("/api/puzzle?letters=hoot&puzzle_id=test1")
+                .uri("/api/check-puzzle/test1/letters/hoot")
                 .body(Body::empty())
                 .unwrap(),
         )
@@ -175,7 +177,7 @@ async fn test_bad_puzzle_id() {
     let response = app
         .oneshot(
             Request::builder()
-                .uri("/api/puzzle?letters=hoot&puzzle_id=test2")
+                .uri("/api/check-puzzle/test2/letters/hoot")
                 .body(Body::empty())
                 .unwrap(),
         )

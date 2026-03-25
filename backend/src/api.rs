@@ -5,7 +5,7 @@ use std::{
 
 use axum::{
     Json, Router,
-    extract::{Query, State},
+    extract::{Path, State},
     http::StatusCode,
     routing::{get, post},
 };
@@ -33,58 +33,16 @@ pub struct GreetInput {
     pub name: String,
 }
 
-/// This will be a GET endpoint
-async fn hello() -> Json<Message> {
-    Json(Message {
-        text: "Hello from Rust".to_string(),
-    })
-}
-
-/// This will be a POST endpoint
-async fn greet(Json(input): Json<GreetInput>) -> Json<Message> {
-    Json(Message {
-        text: format!("Hello {}", input.name),
-    })
-}
-
-async fn test_board(State(state): State<AppState>) -> Json<Vec<String>> {
-    let board = Arc::new(Board::create(
-        3,
-        3,
-        vec!['t', 'r', 'b', 'h', 'o', 'u', 'f', 'l', 'y'],
-    ));
-    Json(find_words(&board, &state.full_word_list))
-}
-
 #[derive(Deserialize)]
-pub struct BoardParam {
-    width: usize,
-    height: usize,
-    letters: String,
-}
-
-async fn find_from_board(
-    State(state): State<AppState>,
-    Query(param): Query<BoardParam>,
-) -> Json<Vec<String>> {
-    // println!("{}", param.letters);
-    Json(find_words(
-        &Board::create(param.width, param.height, param.letters.chars().collect()),
-        &state.full_word_list,
-    ))
-}
-
-#[derive(Deserialize)]
-pub struct PuzzleParam {
+pub struct CheckPuzzleParams {
     letters: String,
     puzzle_id: String,
 }
 
-async fn puzzle(
+async fn check_puzzle(
     State(state): State<AppState>,
-    Query(param): Query<PuzzleParam>,
-    // ) -> Result<Json<HashMap<String, Vec<String>>>, (StatusCode, String)> {
-) -> Result<Json<Words>, (StatusCode, &'static str)> {
+    Path(param): Path<CheckPuzzleParams>,
+) -> Result<(StatusCode, Json<Words>), (StatusCode, &'static str)> {
     let Some(puzzle) = state.all_puzzles.get(&param.puzzle_id) else {
         return Err((StatusCode::BAD_REQUEST, "Invalid puzzle ID"));
     };
@@ -94,11 +52,11 @@ async fn puzzle(
         &state.full_word_list,
     );
 
-    Ok(Json(puzzle.compare_found_words(found_words)))
+    Ok((StatusCode::OK, Json(puzzle.compare_found_words(found_words))))
 }
 
 #[derive(Deserialize)]
-pub struct CreatePuzzleParam {
+pub struct CreatePuzzleParams {
     puzzle_id: String,
     width: usize,
     height: usize,
@@ -107,7 +65,7 @@ pub struct CreatePuzzleParam {
 }
 
 async fn create_puzzle(
-    Json(param): Json<CreatePuzzleParam>,
+    Json(param): Json<CreatePuzzleParams>,
 ) -> Result<StatusCode, (StatusCode, &'static str)> {
     let puzzle = match Puzzle::create(
         param.width,
@@ -126,6 +84,16 @@ async fn create_puzzle(
     Ok(StatusCode::OK)
 }
 
+async fn load_puzzle(
+    State(state): State<AppState>,
+    Path(puzzle_id): Path<String>,
+) -> Result<(StatusCode, Json<Puzzle>), (StatusCode, &'static str)> {
+    match state.all_puzzles.get(&puzzle_id) {
+        Some(p) => Ok((StatusCode::OK, Json(p.clone()))),
+        None => Err((StatusCode::BAD_REQUEST, "Invalid puzzle ID")),
+    }
+}
+
 pub fn router(full_word_list: Arc<Trie>, all_puzzles: Arc<HashMap<String, Puzzle>>) -> Router {
     let state = AppState {
         full_word_list,
@@ -133,11 +101,8 @@ pub fn router(full_word_list: Arc<Trie>, all_puzzles: Arc<HashMap<String, Puzzle
     };
 
     Router::new()
-        .route("/api/hello", get(hello))
-        .route("/api/greet", post(greet))
-        .route("/api/test", get(test_board))
-        .route("/api/find", get(find_from_board))
-        .route("/api/puzzle", get(puzzle))
-        .route("/api/create_puzzle", post(create_puzzle))
+        .route("/api/check-puzzle/:puzzle_id/letters/:letters", get(check_puzzle))
+        .route("/api/puzzle", post(create_puzzle))
+        .route("/api/puzzle/:puzzle_id", get(load_puzzle))
         .with_state(state)
 }

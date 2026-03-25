@@ -1,11 +1,11 @@
 use std::collections::HashSet;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::words::*;
 
 /// A cell of the board, indexed by its coordinates
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
 pub struct BoardCell(pub usize, pub usize);
 
 /// A board of letters, some of which might not be filled in
@@ -18,7 +18,7 @@ pub struct Board {
 impl Board {
     /// Create a Board given a width, height, and a vector of characters
     /// Panics if the length of chars does not match width * height
-    /// For an empty cell, pass in ' '
+    /// For an empty cell, pass in '_'
     pub fn create(width: usize, height: usize, chars: Vec<char>) -> Self {
         assert_eq!(width * height, chars.len());
 

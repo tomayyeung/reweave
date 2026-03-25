@@ -44,7 +44,7 @@ function App() {
       <form
         // className={styles.form}
         action={async (formData) => {
-          const res = await fetch("/api/create_puzzle", {
+          const res = await fetch("/api/puzzle", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
