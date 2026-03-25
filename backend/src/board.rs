@@ -1,9 +1,11 @@
 use std::collections::HashSet;
 
+use serde::Serialize;
+
 use crate::words::*;
 
 /// A cell of the board, indexed by its coordinates
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub struct BoardCell(pub usize, pub usize);
 
 /// A board of letters, some of which might not be filled in

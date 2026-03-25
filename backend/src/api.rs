@@ -1,4 +1,7 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 use axum::{
     Json, Router,
@@ -81,9 +84,9 @@ async fn puzzle(
     State(state): State<AppState>,
     Query(param): Query<PuzzleParam>,
     // ) -> Result<Json<HashMap<String, Vec<String>>>, (StatusCode, String)> {
-) -> Result<Json<Words>, (StatusCode, String)> {
+) -> Result<Json<Words>, (StatusCode, &'static str)> {
     let Some(puzzle) = state.all_puzzles.get(&param.puzzle_id) else {
-        return Err((StatusCode::BAD_REQUEST, "Invalid puzzle ID".to_string()));
+        return Err((StatusCode::BAD_REQUEST, "Invalid puzzle ID"));
     };
 
     let found_words = find_words(
@@ -92,6 +95,35 @@ async fn puzzle(
     );
 
     Ok(Json(puzzle.compare_found_words(found_words)))
+}
+
+#[derive(Deserialize)]
+pub struct CreatePuzzleParam {
+    puzzle_id: String,
+    width: usize,
+    height: usize,
+    letters: String,
+    words: HashSet<String>,
+}
+
+async fn create_puzzle(
+    Json(param): Json<CreatePuzzleParam>,
+) -> Result<StatusCode, (StatusCode, &'static str)> {
+    let puzzle = match Puzzle::create(
+        param.width,
+        param.height,
+        param.letters.chars().collect(),
+        param.words,
+    ) {
+        Ok(puzzle) => puzzle,
+        Err(msg) => {
+            return Err((StatusCode::BAD_REQUEST, msg));
+        }
+    };
+
+    puzzle.to_file(format!("puzzles/{}.json", param.puzzle_id).as_str());
+
+    Ok(StatusCode::OK)
 }
 
 pub fn router(full_word_list: Arc<Trie>, all_puzzles: Arc<HashMap<String, Puzzle>>) -> Router {
@@ -106,5 +138,6 @@ pub fn router(full_word_list: Arc<Trie>, all_puzzles: Arc<HashMap<String, Puzzle
         .route("/api/test", get(test_board))
         .route("/api/find", get(find_from_board))
         .route("/api/puzzle", get(puzzle))
+        .route("/api/create_puzzle", post(create_puzzle))
         .with_state(state)
 }

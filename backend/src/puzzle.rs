@@ -1,7 +1,7 @@
 use std::collections::HashSet;
+use std::fs::File;
 
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::board::*;
 use crate::words::*;
@@ -17,7 +17,7 @@ pub struct Words {
 
 /// A list of words that the player uses to create
 /// a board.
-#[derive(Default)]
+#[derive(Default, Serialize)]
 pub struct Puzzle {
     pub width: usize,
     pub height: usize,
@@ -40,6 +40,43 @@ impl Puzzle {
         }
     }
 
+    pub fn create(
+        width: usize,
+        height: usize,
+        chars: Vec<char>,
+        words: HashSet<String>,
+    ) -> Result<Self, &'static str> {
+        if width * height != chars.len() {
+            return Err("Width and height do not match length of chars");
+        }
+
+        let mut holes = Vec::new();
+        let mut starting_letters = Vec::new();
+
+        let mut i = 0;
+        for x in 0..height {
+            for y in 0..width {
+                let c = *chars.get(i).unwrap();
+
+                if c == '#' {
+                    holes.push(BoardCell(x, y));
+                } else if c.is_ascii_lowercase() {
+                    starting_letters.push((BoardCell(x, y), c));
+                }
+
+                i += 1;
+            }
+        }
+
+        Ok(Puzzle {
+            width,
+            height,
+            holes,
+            starting_letters,
+            words,
+        })
+    }
+
     pub fn compare_found_words(&self, found_words: Vec<String>) -> Words {
         let found_words_set: HashSet<_> = found_words.into_iter().collect();
 
@@ -48,6 +85,11 @@ impl Puzzle {
             missing: self.words.difference(&found_words_set).cloned().collect(),
             extra: found_words_set.difference(&self.words).cloned().collect(),
         }
+    }
+
+    pub fn to_file(&self, path: &str) {
+        let file = File::create(path).unwrap();
+        serde_json::to_writer(file, &self).unwrap();
     }
 }
 

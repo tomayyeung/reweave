@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use reweave::{api, puzzle::Puzzle, words};
+use reweave::{api, puzzle, words};
 
 const WORDS: &str = include_str!("../../wordlist/wordlist.txt");
 
@@ -11,7 +11,7 @@ async fn main() {
     let full_word_list = Arc::new(words::Trie::new(WORDS.split("\n").collect()));
 
     // Initialize puzzles
-    let all_puzzles = Arc::new(HashMap::<String, Puzzle>::new());
+    let all_puzzles = Arc::new(HashMap::<String, puzzle::Puzzle>::new());
 
     // Initialize APIs
     let app = api::router(full_word_list, all_puzzles);
