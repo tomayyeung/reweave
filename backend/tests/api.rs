@@ -2,21 +2,43 @@ use axum::Router;
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use http_body_util::BodyExt;
+use std::collections::HashMap;
 use std::sync::Arc;
 use tower::ServiceExt;
 
-use reweave::{api, words};
+use reweave::{api, board, puzzle, words};
 
-fn create_test_router() -> Router {
+fn create_test_router1() -> Router {
     let full_word_list = Arc::new(words::Trie::new(vec![
         "both", "broth", "foul", "trouble", "blur",
     ]));
-    api::router(full_word_list)
+    let all_puzzles = Arc::new(HashMap::new());
+
+    api::router(full_word_list, all_puzzles)
+}
+
+fn create_test_router2() -> Router {
+    let full_word_list = Arc::new(words::Trie::new(vec![
+        "bot", "hot", "tho", "too", "both", "hoot",
+    ]));
+    let all_puzzles = Arc::new(
+        vec![(
+            "test1".to_string(),
+            puzzle::Puzzle::from_board(
+                &board::Board::create(2, 2, vec!['o', 't', 'b', 'h']),
+                &full_word_list,
+            ),
+        )]
+        .into_iter()
+        .collect(),
+    );
+
+    api::router(full_word_list, all_puzzles)
 }
 
 #[tokio::test]
 async fn test_hello() {
-    let app = create_test_router();
+    let app = create_test_router1();
 
     let response = app
         .oneshot(
@@ -39,7 +61,7 @@ async fn test_hello() {
 
 #[tokio::test]
 async fn test_greet() {
-    let app = create_test_router();
+    let app = create_test_router1();
 
     let request_body = serde_json::to_string(&api::GreetInput {
         name: "Thomas".to_string(),
@@ -69,7 +91,7 @@ async fn test_greet() {
 
 #[tokio::test]
 async fn test_board() {
-    let app = create_test_router();
+    let app = create_test_router1();
 
     let response = app
         .oneshot(
@@ -93,7 +115,7 @@ async fn test_board() {
 
 #[tokio::test]
 async fn test_find_from_board() {
-    let app = create_test_router();
+    let app = create_test_router1();
 
     let response = app
         .oneshot(
@@ -107,10 +129,58 @@ async fn test_find_from_board() {
 
     assert!(response.status().is_success());
 
-    // let body = to_bytes(response.into_body(), 10_000).await.unwrap();
     let body = response.into_body().collect().await.unwrap().to_bytes();
     let found_words: Vec<String> = serde_json::from_slice(&body).unwrap();
 
-    // assert!(result.contains(&"cat".to_string()));
     assert_eq!(found_words, vec!["both"]);
+}
+
+#[tokio::test]
+async fn test_puzzle() {
+    let app = create_test_router2();
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/puzzle?letters=hoot&puzzle_id=test1")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert!(response.status().is_success());
+
+    let body = response.into_body().collect().await.unwrap().to_bytes();
+    let mut words: puzzle::Words = serde_json::from_slice(&body).unwrap();
+
+    words.found.sort();
+    words.missing.sort();
+    words.extra.sort();
+
+    assert_eq!(
+        words,
+        puzzle::Words {
+            found: vec!["hot".to_string(), "tho".to_string()],
+            missing: vec!["bot".to_string(), "both".to_string()],
+            extra: vec!["hoot".to_string(), "too".to_string()]
+        }
+    );
+}
+
+#[tokio::test]
+async fn test_bad_puzzle_id() {
+    let app = create_test_router2();
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/puzzle?letters=hoot&puzzle_id=test2")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert!(response.status().is_client_error());
 }

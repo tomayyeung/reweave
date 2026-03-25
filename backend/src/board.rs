@@ -29,9 +29,11 @@ impl Board {
                 let c = chars.get(i).unwrap();
                 i += 1;
 
-                if *c == '_' { // Empty cell
+                if *c == '_' {
+                    // Empty cell
                     row.push(None);
-                } else if c.is_ascii_lowercase() { // Is valid letter
+                } else if c.is_ascii_lowercase() {
+                    // Is valid letter
                     row.push(Some(*c));
                 } else {
                     panic!("Invalid character when creating board {c}");
@@ -50,6 +52,21 @@ impl Board {
 
     pub fn get(&self, cell: BoardCell) -> Option<char> {
         *self.cells.get(cell.0)?.get(cell.1)?
+    }
+
+    pub fn get_empty_cells(&self) -> Vec<BoardCell> {
+        let mut out = Vec::new();
+
+        for i in 0..self.height {
+            for j in 0..self.width {
+                let cell = BoardCell(i, j);
+                if self.get(cell).is_none() {
+                    out.push(cell);
+                }
+            }
+        }
+
+        out
     }
 }
 
