@@ -9,3 +9,15 @@
 .lengthLabel {
   font-weight: bold;
 }
+
+.found {
+  color: green;
+}
+
+.missing {
+  color: red;
+}
+
+.extra {
+  color: gray;
+}

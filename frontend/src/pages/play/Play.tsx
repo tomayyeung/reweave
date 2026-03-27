@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { Board } from "@components/Board";
 import { WordList } from "@components/WordList";
@@ -30,8 +30,10 @@ function generateStartingLetters(
   }).join("");
 }
 
-export default async function PlayPage() {
+export default function PlayPage() {
   const { puzzleId } = useParams();
+
+  const puzzleFetched = useRef(false);
 
   const [boardLetters, setBoardLetters] = useState("");
   const [w, setWidth] = useState(0);
@@ -42,13 +44,14 @@ export default async function PlayPage() {
     fetch(`/api/puzzle/${puzzleId}`)
       .then((res) => res.json())
       .then((puzzle) => {
+        console.log(puzzle);
         setWidth(puzzle.width);
         setHeight(puzzle.height);
 
         const startingLettersMap = new Map<string, string>(
-          (
-            JSON.parse(puzzle.starting_letters) as [[number, number], string][]
-          ).map(([cell, char]) => [cellKey({ x: cell[0], y: cell[1] }), char]),
+          (puzzle.starting_letters as [[number, number], string][]).map(
+            ([cell, char]) => [cellKey({ x: cell[0], y: cell[1] }), char],
+          ),
         );
 
         const initialLetters = generateStartingLetters(
@@ -58,11 +61,18 @@ export default async function PlayPage() {
           startingLettersMap,
         );
         setBoardLetters(initialLetters);
-      });
-  });
 
+        puzzleFetched.current = true;
+      });
+  }, []);
+
+  // need to not have this run once when the page loads
   useEffect(() => {
     // console.log("New board letters: '" + boardLetters + "'");
+    if (!puzzleFetched.current) {
+      return;
+    }
+
     fetch(`/api/check-puzzle/${puzzleId}/letters/${boardLetters}`)
       .then((res) => res.json())
       .then((data) => {
