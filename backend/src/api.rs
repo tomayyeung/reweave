@@ -5,11 +5,11 @@ use std::{
 
 use axum::{
     Json, Router,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     routing::{get, post},
 };
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::{
     board::{Board, find_words},
@@ -23,14 +23,22 @@ struct AppState {
     all_puzzles: Arc<HashMap<String, Puzzle>>,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct Message {
-    pub text: String,
+#[derive(Deserialize)]
+pub struct BoardParam {
+    width: usize,
+    height: usize,
+    letters: String,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct GreetInput {
-    pub name: String,
+async fn find_from_board(
+    State(state): State<AppState>,
+    Query(param): Query<BoardParam>,
+) -> Json<Vec<String>> {
+    // println!("{}", param.letters);
+    Json(find_words(
+        &Board::create(param.width, param.height, param.letters.chars().collect()),
+        &state.full_word_list,
+    ))
 }
 
 #[derive(Deserialize)]
@@ -52,7 +60,10 @@ async fn check_puzzle(
         &state.full_word_list,
     );
 
-    Ok((StatusCode::OK, Json(puzzle.compare_found_words(found_words))))
+    Ok((
+        StatusCode::OK,
+        Json(puzzle.compare_found_words(found_words)),
+    ))
 }
 
 #[derive(Deserialize)]
@@ -101,7 +112,11 @@ pub fn router(full_word_list: Arc<Trie>, all_puzzles: Arc<HashMap<String, Puzzle
     };
 
     Router::new()
-        .route("/api/check-puzzle/:puzzle_id/letters/:letters", get(check_puzzle))
+        .route("/api/find", get(find_from_board))
+        .route(
+            "/api/check-puzzle/:puzzle_id/letters/:letters",
+            get(check_puzzle),
+        )
         .route("/api/puzzle", post(create_puzzle))
         .route("/api/puzzle/:puzzle_id", get(load_puzzle))
         .with_state(state)
