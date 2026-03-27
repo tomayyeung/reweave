@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::words::*;
 
 /// A cell of the board, indexed by its coordinates
-#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct BoardCell(pub usize, pub usize);
 
 /// A board of letters, some of which might not be filled in
@@ -31,8 +31,8 @@ impl Board {
                 let c = chars.get(i).unwrap();
                 i += 1;
 
-                if *c == '_' {
-                    // Empty cell
+                if *c == '_' || *c == '#' {
+                    // Empty cell / hole in puzzle
                     row.push(None);
                 } else if c.is_ascii_lowercase() {
                     // Is valid letter

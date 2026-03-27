@@ -16,6 +16,10 @@
   background-color: #f3d090;
 }
 
+.holeTile {
+  display: none;
+}
+
 .tileLetter {
   font-size: 72pt;
   font-weight: 700;

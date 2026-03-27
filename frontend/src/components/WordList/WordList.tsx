@@ -13,18 +13,26 @@ function groupAndSort(words: string[]): [number, string[]][] {
     .sort(([a], [b]) => a - b);
 }
 
-export function WordList({ words }: { words: string[] }) {
-  const sortedWords = groupAndSort(words);
+export type Words = {
+  found: string[],
+  missing: string[],
+  extra: string[]
+}
+
+export function WordList({ words }: { words: Words }) {
+  const sortedFoundWords = groupAndSort(words.found);
+  const sortedMissingWords = groupAndSort(words.missing);
+  const sortedExtraWords = groupAndSort(words.extra);
 
   return (
     <div className={styles.wordList}>
-      {sortedWords.map(([length, words], idx) => {
+      {/* {sortedWords.map(([length, words], idx) => {
         // console.log(length, words);
         return <div key={idx}>
           <p className={styles.lengthLabel}>{length} letters</p>
           <p>{words.join(" ")}</p>
         </div>;
-      })}
+      })} */}
     </div>
   );
 }

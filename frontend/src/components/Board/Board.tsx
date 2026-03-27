@@ -4,12 +4,13 @@ import styles from "./Board.module.css";
 type TileProps = {
   letter: string;
   idx: number;
+  isHole: boolean;
   updateSelectedTile: (idx: number) => void;
   isSelected: boolean;
 };
 
 type BoardProps = {
-  boardType: "Create" | "Play",
+  boardType: "Create" | "Play";
   board: BoardData;
   boardLetters: string;
   setBoardLetters: React.Dispatch<React.SetStateAction<string>>;
@@ -21,20 +22,31 @@ interface BoardData {
   letters: string;
 }
 
-function Tile({ letter, idx, updateSelectedTile, isSelected }: TileProps) {
+function Tile({
+  letter,
+  idx,
+  isHole,
+  updateSelectedTile,
+  isSelected,
+}: TileProps) {
   return (
     <div
-      className={`${styles.tile} ${isSelected ? styles.selectedTile : ""}`}
+      className={`${styles.tile} ${isSelected ? styles.selectedTile : ""} ${isHole ? styles.selectedTile : ""}`}
       onClick={() => {
         updateSelectedTile(idx);
       }}
     >
-      <span className={styles.tileLetter}>{letter === '_' ? ' ' : letter}</span>
+      <span className={styles.tileLetter}>{letter === "_" ? " " : letter}</span>
     </div>
   );
 }
 
-export function Board({ boardType, board, boardLetters, setBoardLetters }: BoardProps) {
+export function Board({
+  boardType,
+  board,
+  boardLetters,
+  setBoardLetters,
+}: BoardProps) {
   const [selectedTile, setSelectedTile] = useState(-1);
 
   useEffect(() => {
@@ -75,17 +87,22 @@ export function Board({ boardType, board, boardLetters, setBoardLetters }: Board
         gridTemplateColumns: `repeat(${board.height}, 1fr)`,
       }}
     >
-      {[...board.letters].map((letter, i) => (
-        <Tile
-          key={i}
-          letter={letter.toUpperCase()}
-          idx={i}
-          updateSelectedTile={(idx: number) => {
-            setSelectedTile(selectedTile === idx ? -1 : idx);
-          }}
-          isSelected={selectedTile === i}
-        />
-      ))}
+      {[...board.letters].map((letter, i) => {
+        const isHole = letter === "#";
+
+        return (
+          <Tile
+            key={i}
+            letter={letter.toUpperCase()}
+            idx={i}
+            isHole={isHole}
+            updateSelectedTile={(idx: number) => {
+              if (!isHole) setSelectedTile(selectedTile === idx ? -1 : idx);
+            }}
+            isSelected={selectedTile === i}
+          />
+        );
+      })}
     </div>
   );
 }
