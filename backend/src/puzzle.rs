@@ -57,8 +57,8 @@ impl Puzzle {
         let mut starting_letters = Vec::new();
 
         let mut i = 0;
-        for x in 0..height {
-            for y in 0..width {
+        for y in 0..width {
+            for x in 0..height {
                 let c = *chars.get(i).unwrap();
 
                 if c == '#' {

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 
 import { Board } from "@components/Board";
-import { WordList } from "@components/WordList";
+import { PlayWordList } from "@components/WordList";
+import type { Words } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
 import { useParams } from "react-router-dom";
 
@@ -36,9 +37,14 @@ export default function PlayPage() {
   const puzzleFetched = useRef(false);
 
   const [boardLetters, setBoardLetters] = useState("");
+  const [hardSet, setHardSet] = useState<boolean[]>([]);
   const [w, setWidth] = useState(0);
   const [h, setHeight] = useState(0);
-  const [words, setWords] = useState({ found: [], missing: [], extra: [] });
+  const [words, setWords] = useState<Words>({
+    found: [],
+    missing: [],
+    extra: [],
+  });
 
   useEffect(() => {
     fetch(`/api/puzzle/${puzzleId}`)
@@ -60,15 +66,18 @@ export default function PlayPage() {
           puzzle.holes,
           startingLettersMap,
         );
+
+        // intialize board w/ letters
+        // any initial letters means they are hard set
         setBoardLetters(initialLetters);
+        setHardSet([...initialLetters].map((letter) => letter !== "_"));
 
         puzzleFetched.current = true;
       });
   }, []);
 
-  // need to not have this run once when the page loads
   useEffect(() => {
-    // console.log("New board letters: '" + boardLetters + "'");
+    // console.log("New board letters: '" + fromCreateBoardLetters(boardLetters, true) + "'");
     if (!puzzleFetched.current) {
       return;
     }
@@ -86,15 +95,14 @@ export default function PlayPage() {
       <Wrapper>
         <Board
           boardType="Play"
-          board={{
-            width: w,
-            height: h,
-            letters: boardLetters,
-          }}
+          filteringLetters={false}
+          width={w}
+          height={h}
           boardLetters={boardLetters}
+          hardSet={hardSet}
           setBoardLetters={setBoardLetters}
         />
-        <WordList words={words} />
+        <PlayWordList words={words} />
       </Wrapper>
     </main>
   );

@@ -46,7 +46,7 @@ export type Words = {
   extra: string[];
 };
 
-export function WordList({ words }: { words: Words }) {
+export function PlayWordList({ words }: { words: Words }) {
   const sortedFoundWords = groupAndSort(words.found);
   const sortedMissingWords = groupAndSort(words.missing);
   const sortedExtraWords = groupAndSort(words.extra);
@@ -80,6 +80,22 @@ export function WordList({ words }: { words: Words }) {
             )}
           </li>
         );
+      })}
+    </div>
+  );
+}
+
+export function CreateWordList({ words }: { words: string[] }) {
+  const sortedWords = groupAndSort(words);
+
+  return (
+    <div className={styles.wordList}>
+      {sortedWords.map(([length, words], idx) => {
+        // console.log(length, words);
+        return <div key={idx}>
+          <p className={styles.lengthLabel}>{length} letters</p>
+          <p>{words.join(" ")}</p>
+        </div>;
       })}
     </div>
   );

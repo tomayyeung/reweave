@@ -1,1 +1,2 @@
-export { WordList } from "./WordList";
+export type { Words } from "./WordList";
+export { PlayWordList, CreateWordList } from "./WordList";

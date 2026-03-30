@@ -17,16 +17,21 @@
 }
 
 .holeTile {
-  display: none;
+  border: 3px solid red;
 }
 
 .tileLetter {
   font-size: 72pt;
   font-weight: 700;
-  color: #444;
+  color: #222;
   line-height: 1;
   user-select: none;
 }
+
+.notHardSet .tileLetter {
+  color: #666;
+}
+
 
 .board {
   font-family: Arial, Helvetica, sans-serif;
@@ -34,4 +39,6 @@
   border: 3px solid #000;
   display: grid;
   gap: 6px;
+  grid-auto-rows: min-content;
+  align-self: flex-start;
 }

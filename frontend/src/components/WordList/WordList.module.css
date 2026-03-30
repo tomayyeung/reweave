@@ -1,9 +1,10 @@
 .wordList {
-  height: 600px;
+  /* height: 600px; */
   margin: 0 10px;
   font-family: "Lato";
   font-size: large;
   overflow: auto;
+  align-self: stretch;
 }
 
 .lengthLabel {

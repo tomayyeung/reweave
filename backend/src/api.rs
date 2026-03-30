@@ -86,6 +86,7 @@ async fn create_puzzle(
     ) {
         Ok(puzzle) => puzzle,
         Err(msg) => {
+            // println!("Err: {}", msg);
             return Err((StatusCode::BAD_REQUEST, msg));
         }
     };
