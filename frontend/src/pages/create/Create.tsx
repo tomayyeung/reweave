@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { Board } from "@components/Board";
+import { Board, BLANK } from "@components/Board";
 import { CreateWordList } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
 
@@ -12,11 +12,11 @@ export default function CreatePage() {
 
   const [wordListDone, setWordListDone] = useState(false);
   const [boardLetters, setBoardLetters] = useState("_".repeat(w * h));
-  const [hardSet, setHardSet] = useState(new Array(w * h).fill(true));
+  const [hardSet, setHardSet] = useState<boolean[]>(new Array(w * h).fill(true));
   const [words, setWords] = useState<string[]>([]);
 
   useEffect(() => {
-    // console.log("New board letters: '" + boardLetters + "'");
+    console.log("New board letters: '" + boardLetters + "'");
     const updateWords = async () => {
       if (wordListDone) {
         return;
@@ -43,7 +43,7 @@ export default function CreatePage() {
         puzzle_id: formData.get("puzzle-name"),
         width: w,
         height: h,
-        letters: hardSet.map((isSet, i) => isSet ? boardLetters[i] : "_").join(""),
+        letters: hardSet.map((isSet, i) => isSet ? boardLetters[i] : BLANK).join(""),
         words: words,
       }),
     });

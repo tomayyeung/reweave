@@ -22,10 +22,11 @@ pub struct Words {
 pub struct Puzzle {
     pub width: usize,
     pub height: usize,
-    /// Empty squares in the puzzle that the player knows will be empty
-    pub holes: Vec<BoardCell>,
-    /// Filled squares in the puzzle that the player is given at the start
-    pub starting_letters: Vec<(BoardCell, char)>,
+    // /// Empty squares in the puzzle that the player knows will be empty
+    // pub holes: Vec<BoardCell>,
+    // /// Filled squares in the puzzle that the player is given at the start
+    // pub starting_letters: Vec<(BoardCell, char)>,
+    pub letters: String,
     pub words: HashSet<String>,
 }
 
@@ -35,47 +36,34 @@ impl Puzzle {
         Puzzle {
             width: board.width,
             height: board.height,
-            holes: board.get_empty_cells(),
-            starting_letters: vec![],
+            // holes: board.get_empty_cells(),
+            // starting_letters: vec![],
+            letters: board
+                .cells
+                .iter()
+                .flat_map(|row| row.iter())
+                .map(|cell| cell.unwrap_or('_'))
+                .collect(),
             words: find_words(board, word_list).into_iter().collect(),
         }
     }
 
     /// Create a puzzle from a starting board and a list of words
-    /// For holes in the puzzle use '#'
+    /// For holes in the puzzle use '!'
     pub fn create(
         width: usize,
         height: usize,
-        chars: Vec<char>,
+        letters: String,
         words: HashSet<String>,
     ) -> Result<Self, &'static str> {
-        if width * height != chars.len() {
+        if width * height != letters.len() {
             return Err("Width and height do not match length of chars");
-        }
-
-        let mut holes = Vec::new();
-        let mut starting_letters = Vec::new();
-
-        let mut i = 0;
-        for y in 0..width {
-            for x in 0..height {
-                let c = *chars.get(i).unwrap();
-
-                if c == '#' {
-                    holes.push(BoardCell(x, y));
-                } else if c.is_ascii_lowercase() {
-                    starting_letters.push((BoardCell(x, y), c));
-                }
-
-                i += 1;
-            }
         }
 
         Ok(Puzzle {
             width,
             height,
-            holes,
-            starting_letters,
+            letters,
             words,
         })
     }
@@ -127,7 +115,7 @@ mod tests {
 
     #[test]
     fn cmp_puzzle_from() {
-        let board = Board::create(2, 2, vec!['c', 'a', 't', 's']);
+        let board = Board::create(2, 2, vec!['c', 'a', 't', 's']).unwrap();
         let word_list = Trie::new(vec!["act", "cat", "cats"]);
         let puzzle = Puzzle::from_board(&board, &word_list);
 

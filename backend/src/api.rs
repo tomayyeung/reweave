@@ -20,6 +20,7 @@ use crate::{
 #[derive(Clone)]
 struct AppState {
     full_word_list: Arc<Trie>,
+    puzzle_path: Arc<String>,
     all_puzzles: Arc<HashMap<String, Puzzle>>,
 }
 
@@ -33,11 +34,16 @@ pub struct BoardParam {
 async fn find_from_board(
     State(state): State<AppState>,
     Query(param): Query<BoardParam>,
-) -> Json<Vec<String>> {
+) -> Result<(StatusCode, Json<Vec<String>>), (StatusCode, String)> {
     // println!("{}", param.letters);
-    Json(find_words(
-        &Board::create(param.width, param.height, param.letters.chars().collect()),
-        &state.full_word_list,
+    let board = match Board::create(param.width, param.height, param.letters.chars().collect()) {
+        Ok(board) => board,
+        Err(e) => return Err((StatusCode::BAD_REQUEST, e)),
+    };
+
+    Ok((
+        StatusCode::OK,
+        Json(find_words(&board, &state.full_word_list)),
     ))
 }
 
@@ -50,15 +56,17 @@ pub struct CheckPuzzleParams {
 async fn check_puzzle(
     State(state): State<AppState>,
     Path(param): Path<CheckPuzzleParams>,
-) -> Result<(StatusCode, Json<Words>), (StatusCode, &'static str)> {
+) -> Result<(StatusCode, Json<Words>), (StatusCode, String)> {
     let Some(puzzle) = state.all_puzzles.get(&param.puzzle_id) else {
-        return Err((StatusCode::BAD_REQUEST, "Invalid puzzle ID"));
+        return Err((StatusCode::BAD_REQUEST, "Invalid puzzle ID".to_string()));
     };
 
-    let found_words = find_words(
-        &Board::create(puzzle.width, puzzle.height, param.letters.chars().collect()),
-        &state.full_word_list,
-    );
+    let board = match Board::create(puzzle.width, puzzle.height, param.letters.chars().collect()) {
+        Ok(board) => board,
+        Err(e) => return Err((StatusCode::BAD_REQUEST, e)),
+    };
+
+    let found_words = find_words(&board, &state.full_word_list);
 
     Ok((
         StatusCode::OK,
@@ -76,14 +84,10 @@ pub struct CreatePuzzleParams {
 }
 
 async fn create_puzzle(
+    State(state): State<AppState>,
     Json(param): Json<CreatePuzzleParams>,
 ) -> Result<StatusCode, (StatusCode, &'static str)> {
-    let puzzle = match Puzzle::create(
-        param.width,
-        param.height,
-        param.letters.chars().collect(),
-        param.words,
-    ) {
+    let puzzle = match Puzzle::create(param.width, param.height, param.letters, param.words) {
         Ok(puzzle) => puzzle,
         Err(msg) => {
             // println!("Err: {}", msg);
@@ -91,7 +95,7 @@ async fn create_puzzle(
         }
     };
 
-    puzzle.to_file(format!("puzzles/{}.json", param.puzzle_id).as_str());
+    puzzle.to_file(format!("{}/{}.json", state.puzzle_path, param.puzzle_id).as_str());
 
     Ok(StatusCode::OK)
 }
@@ -106,10 +110,11 @@ async fn load_puzzle(
     }
 }
 
-pub fn router(full_word_list: Arc<Trie>, all_puzzles: Arc<HashMap<String, Puzzle>>) -> Router {
+pub fn router(full_word_list: Arc<Trie>, all_puzzles: Arc<HashMap<String, Puzzle>>, puzzle_path: Arc<String>) -> Router {
     let state = AppState {
         full_word_list,
         all_puzzles,
+        puzzle_path,
     };
 
     Router::new()

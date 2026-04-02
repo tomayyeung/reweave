@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import styles from "./Board.module.css";
 
+export const BLANK = "_";
+export const HOLE = "!";
+
 type TileProps = {
+  boardType: "Create" | "Play";
   letter: string;
   idx: number;
   isHardSet: boolean;
@@ -28,6 +32,7 @@ type BoardProps = {
 };
 
 function Tile({
+  boardType,
   letter,
   idx,
   isHardSet,
@@ -37,12 +42,19 @@ function Tile({
 }: TileProps) {
   return (
     <div
-      className={`${styles.tile} ${isHardSet ? "" : styles.notHardSet} ${isSelected ? styles.selectedTile : ""} ${isHole ? styles.holeTile : ""}`}
+      className={
+        `${styles.tile} ` +
+        `${isHardSet ? "" : styles.notHardSet} ` +
+        `${isSelected ? styles.selectedTile : ""} ` +
+        `${isHole ? (boardType === "Create" ? styles.holeTileCreate : styles.holeTilePlay) : ""}`
+      }
       onClick={() => {
         updateSelectedTile(idx);
       }}
     >
-      <span className={styles.tileLetter}>{letter === "_" ? " " : letter}</span>
+      <span className={styles.tileLetter}>
+        {letter === BLANK || letter === HOLE ? " " : letter}
+      </span>
     </div>
   );
 }
@@ -50,7 +62,6 @@ function Tile({
 export function Board({
   boardType,
   filteringLetters,
-  width,
   height,
   boardLetters,
   hardSet,
@@ -58,7 +69,6 @@ export function Board({
   setHardSet,
 }: BoardProps) {
   const [selectedTile, setSelectedTile] = useState(-1);
-  const [holes, setHoles] = useState(new Array(width * height).fill(false));
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -82,22 +92,22 @@ export function Board({
       else if (e.key === "Backspace") {
         // Toggle showing when filtering
         // Hard set hole/empty doesn't make sense; holes are by nature hard set already
-        if (filteringLetters && newChar !== "_" && newChar !== "#") {
+        if (filteringLetters && newChar !== BLANK && newChar !== HOLE) {
           setHardSet?.(hardSet.with(idx, !hardSet[idx]));
         }
 
         // Remove letter when not filtering
         // If playing, no removing a hard set letter
-        else if (!(boardType === "Play" && hardSet[idx])) newChar = "_";
+        else if (!(boardType === "Play" && hardSet[idx])) newChar = BLANK;
       }
 
       // Toggle hole when creating
-      else if (e.key === "Space" && boardType === "Create") {
+      else if (e.key === " " && boardType === "Create") {
+        console.log("hole");
         // Whether filtering or not, we can put in a hole
-        if (newChar === "_") newChar = "#";
-        else if (newChar === "#") newChar = "_";
-
-        setHoles(holes.with(idx, newChar === "#"));
+        if (newChar === BLANK) newChar = HOLE;
+        else if (newChar === HOLE) newChar = BLANK;
+        else return;
       }
 
       setBoardLetters([...boardLetters].with(idx, newChar).join(""));
@@ -119,13 +129,14 @@ export function Board({
     >
       {[...boardLetters].map((letter, i) => (
         <Tile
+          boardType={boardType}
           key={i}
           letter={letter.toUpperCase()}
           idx={i}
           isHardSet={hardSet[i]}
-          isHole={holes[i]}
+          isHole={letter === HOLE}
           updateSelectedTile={(idx: number) => {
-            if (letter !== "#")
+            if (!(boardType === "Play" && letter === HOLE))
               setSelectedTile(selectedTile === idx ? -1 : idx);
           }}
           isSelected={selectedTile === i}

@@ -1,1 +1,1 @@
-export { Board } from "./Board";
+export { Board, BLANK, HOLE } from "./Board";

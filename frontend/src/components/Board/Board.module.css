@@ -1,8 +1,8 @@
 .tile {
-  width: 98px;
+  width: 120px;
   aspect-ratio: 1 / 1;
   margin: 10px;
-  border: 1px solid black;
+  border: 2px solid black;
   border-radius: 5%;
   padding: 10px;
   display: flex;
@@ -10,33 +10,38 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  box-sizing: border-box;
 }
 
 .selectedTile {
   background-color: #f3d090;
 }
 
-.holeTile {
-  border: 3px solid red;
+.holeTileCreate {
+  border-style: dashed;
+}
+
+.holeTilePlay {
+  border-style: none;
 }
 
 .tileLetter {
   font-size: 72pt;
   font-weight: 700;
-  color: #222;
+  color: #111;
   line-height: 1;
   user-select: none;
 }
 
 .notHardSet .tileLetter {
-  color: #666;
+  color: #777;
 }
 
 
 .board {
   font-family: Arial, Helvetica, sans-serif;
   padding: 14px;
-  border: 3px solid #000;
+  /* border: 4px solid #000; */
   display: grid;
   gap: 6px;
   grid-auto-rows: min-content;

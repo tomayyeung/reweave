@@ -1,35 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 
-import { Board } from "@components/Board";
+import { Board, BLANK } from "@components/Board";
 import { PlayWordList } from "@components/WordList";
 import type { Words } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
 import { useParams } from "react-router-dom";
-
-type Cell = {
-  x: number;
-  y: number;
-};
-
-function cellKey(cell: Cell): string {
-  return `${cell.x},${cell.y}`;
-}
-
-function generateStartingLetters(
-  width: number,
-  height: number,
-  holes: Cell[],
-  startingLetters: Map<string, string>,
-): string {
-  const holeKeys = new Set(holes.map(cellKey));
-
-  return Array.from({ length: width * height }, (_, i) => {
-    const key = cellKey({ x: i % width, y: Math.floor(i / width) });
-    if (holeKeys.has(key)) return "#";
-    if (startingLetters.has(key)) return startingLetters.get(key)!;
-    return "_";
-  }).join("");
-}
 
 export default function PlayPage() {
   const { puzzleId } = useParams();
@@ -54,23 +29,14 @@ export default function PlayPage() {
         setWidth(puzzle.width);
         setHeight(puzzle.height);
 
-        const startingLettersMap = new Map<string, string>(
-          (puzzle.starting_letters as [[number, number], string][]).map(
-            ([cell, char]) => [cellKey({ x: cell[0], y: cell[1] }), char],
-          ),
-        );
+        const initialLetters = puzzle.letters;
 
-        const initialLetters = generateStartingLetters(
-          puzzle.width,
-          puzzle.height,
-          puzzle.holes,
-          startingLettersMap,
-        );
+        console.log(initialLetters);
 
         // intialize board w/ letters
         // any initial letters means they are hard set
         setBoardLetters(initialLetters);
-        setHardSet([...initialLetters].map((letter) => letter !== "_"));
+        setHardSet([...initialLetters].map((letter) => letter !== BLANK));
 
         puzzleFetched.current = true;
       });

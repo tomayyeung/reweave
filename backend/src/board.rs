@@ -15,11 +15,14 @@ pub struct Board {
     pub cells: Vec<Vec<Option<char>>>,
 }
 
+pub const BLANK: char = '_';
+pub const HOLE: char = '!';
+
 impl Board {
     /// Create a Board given a width, height, and a vector of characters
     /// Panics if the length of chars does not match width * height
     /// For an empty cell, pass in '_'
-    pub fn create(width: usize, height: usize, chars: Vec<char>) -> Self {
+    pub fn create(width: usize, height: usize, chars: Vec<char>) -> Result<Self, String> {
         assert_eq!(width * height, chars.len());
 
         let mut cells: Vec<Vec<Option<char>>> = Vec::new();
@@ -31,25 +34,25 @@ impl Board {
                 let c = chars.get(i).unwrap();
                 i += 1;
 
-                if *c == '_' || *c == '#' {
+                if *c == BLANK || *c == HOLE {
                     // Empty cell / hole in puzzle
                     row.push(None);
                 } else if c.is_ascii_lowercase() {
                     // Is valid letter
                     row.push(Some(*c));
                 } else {
-                    panic!("Invalid character when creating board {c}");
+                    return Err(format!("Invalid character when creating board {c}"));
                 }
             }
 
             cells.push(row);
         }
 
-        Board {
+        Ok(Board {
             width,
             height,
             cells,
-        }
+        })
     }
 
     pub fn get(&self, cell: BoardCell) -> Option<char> {
@@ -186,7 +189,7 @@ mod tests {
     #[test]
     fn find1() {
         let full_word_list = Trie::new(vec!["abc", "dab", "cab", "daba", "abe"]);
-        let board = Board::create(2, 2, vec!['a', 'b', 'c', 'd']);
+        let board = Board::create(2, 2, vec!['a', 'b', 'c', 'd']).unwrap();
 
         let mut found_words = find_words(&board, &full_word_list);
         found_words.sort();
@@ -197,7 +200,7 @@ mod tests {
     #[test]
     fn find2() {
         let full_word_list = Trie::new(vec!["both", "broth", "foul", "trouble", "blur"]);
-        let board = Board::create(3, 3, vec!['t', 'r', 'b', 'h', 'o', 'u', 'f', 'l', 'y']);
+        let board = Board::create(3, 3, vec!['t', 'r', 'b', 'h', 'o', 'u', 'f', 'l', 'y']).unwrap();
 
         let mut found_words = find_words(&board, &full_word_list);
         found_words.sort();
@@ -208,7 +211,7 @@ mod tests {
     #[test]
     fn find3() {
         let full_word_list = Trie::new(vec!["both", "broth", "foul", "trouble", "blur"]);
-        let board = Board::create(3, 3, vec!['t', 'r', 'b', 'h', 'o', 'u', 'f', 'l', '_']);
+        let board = Board::create(3, 3, vec!['t', 'r', 'b', 'h', 'o', 'u', 'f', 'l', '_']).unwrap();
 
         let mut found_words = find_words(&board, &full_word_list);
         found_words.sort();
@@ -219,7 +222,7 @@ mod tests {
     #[test]
     fn find4() {
         let full_word_list = Trie::new(vec!["both"]);
-        let board = Board::create(2, 2, vec!['o', 't', 'b', 'h']);
+        let board = Board::create(2, 2, vec!['o', 't', 'b', 'h']).unwrap();
 
         let mut found_words = find_words(&board, &full_word_list);
         found_words.sort();
@@ -230,7 +233,7 @@ mod tests {
     #[test]
     fn find5() {
         let full_word_list = Trie::new(vec!["throb"]);
-        let board = Board::create(3, 3, vec!['t', 'h', 'r', '_', '_', 'o', '_', '_', 'b']);
+        let board = Board::create(3, 3, vec!['t', 'h', 'r', '_', '_', 'o', '_', '_', 'b']).unwrap();
 
         let mut found_words = find_words(&board, &full_word_list);
         found_words.sort();

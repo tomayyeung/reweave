@@ -15,7 +15,7 @@ fn create_test_router1() -> Router {
     ]));
     let all_puzzles = Arc::new(HashMap::new());
 
-    api::router(full_word_list, all_puzzles)
+    api::router(full_word_list, all_puzzles, Arc::new("".to_string()))
 }
 
 /// Create a basic test router with a small word list and a puzzle
@@ -27,7 +27,7 @@ fn create_test_router2() -> Router {
         vec![(
             "test1".to_string(),
             puzzle::Puzzle::from_board(
-                &board::Board::create(2, 2, vec!['o', 't', 'b', 'h']),
+                &board::Board::create(2, 2, vec!['o', 't', 'b', 'h']).unwrap(),
                 &full_word_list,
             ),
         )]
@@ -35,7 +35,7 @@ fn create_test_router2() -> Router {
         .collect(),
     );
 
-    api::router(full_word_list, all_puzzles)
+    api::router(full_word_list, all_puzzles, Arc::new("".to_string()))
 }
 
 #[tokio::test]

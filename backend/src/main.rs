@@ -43,7 +43,7 @@ async fn main() {
     let all_puzzles = Arc::new(load_puzzles(&puzzles_path).expect("failed to load puzzles"));
 
     // Initialize APIs
-    let app = api::router(full_word_list, all_puzzles);
+    let app = api::router(full_word_list, all_puzzles, Arc::new(puzzles_path));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
 
