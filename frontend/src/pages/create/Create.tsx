@@ -5,6 +5,7 @@ import { CreateWordList } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
 
 import styles from "./Create.module.css";
+import { API_URL } from "src/config";
 
 export default function CreatePage() {
   const w = 3;
@@ -22,7 +23,7 @@ export default function CreatePage() {
         return;
       }
 
-      fetch(`/api/find?width=${w}&height=${h}&letters=${boardLetters}`)
+      fetch(`${API_URL}/api/find?width=${w}&height=${h}&letters=${boardLetters}`)
         .then((res) => res.json())
         .then((data) => {
           // console.log(data)
@@ -34,7 +35,7 @@ export default function CreatePage() {
   }, [boardLetters]);
 
   async function submitPuzzle(formData: FormData) {
-    const res = await fetch("/api/puzzle", {
+    const res = await fetch(`${API_URL}/api/puzzle`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

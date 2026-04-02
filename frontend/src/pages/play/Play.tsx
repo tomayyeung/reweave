@@ -5,6 +5,7 @@ import { PlayWordList } from "@components/WordList";
 import type { Words } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
 import { useParams } from "react-router-dom";
+import { API_URL } from "src/config";
 
 export default function PlayPage() {
   const { puzzleId } = useParams();
@@ -22,7 +23,7 @@ export default function PlayPage() {
   });
 
   useEffect(() => {
-    fetch(`/api/puzzle/${puzzleId}`)
+    fetch(`${API_URL}/api/puzzle/${puzzleId}`)
       .then((res) => res.json())
       .then((puzzle) => {
         console.log(puzzle);
@@ -48,7 +49,7 @@ export default function PlayPage() {
       return;
     }
 
-    fetch(`/api/check-puzzle/${puzzleId}/letters/${boardLetters}`)
+    fetch(`${API_URL}/api/check-puzzle/${puzzleId}/letters/${boardLetters}`)
       .then((res) => res.json())
       .then((data) => {
         // console.log(data)
