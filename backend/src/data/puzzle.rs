@@ -4,8 +4,8 @@ use std::fs::File;
 
 use serde::{Deserialize, Serialize};
 
-use crate::board::*;
-use crate::words::*;
+use super::board::*;
+use super::words::*;
 
 /// A struct for the output of comparing words in a board
 /// to words a puzzle requires.
@@ -18,7 +18,7 @@ pub struct Words {
 
 /// A list of words that the player uses to create
 /// a board.
-#[derive(Clone, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Puzzle {
     pub width: usize,
     pub height: usize,

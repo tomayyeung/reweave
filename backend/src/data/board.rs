@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 
-use crate::words::*;
+use super::words::*;
 
 /// A cell of the board, indexed by its coordinates
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
@@ -23,6 +23,7 @@ impl Board {
     /// Panics if the length of chars does not match width * height
     /// For an empty cell, pass in '_'
     pub fn create(width: usize, height: usize, chars: Vec<char>) -> Result<Self, String> {
+        // println!("{:?}", chars);
         assert_eq!(width * height, chars.len());
 
         let mut cells: Vec<Vec<Option<char>>> = Vec::new();
