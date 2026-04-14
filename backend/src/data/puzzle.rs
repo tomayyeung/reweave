@@ -55,9 +55,9 @@ impl Puzzle {
         height: usize,
         letters: String,
         words: HashSet<String>,
-    ) -> Result<Self, &'static str> {
+    ) -> Result<Self, String> {
         if width * height != letters.len() {
-            return Err("Width and height do not match length of chars");
+            return Err("Width and height do not match length of chars".to_string());
         }
 
         Ok(Puzzle {

@@ -129,6 +129,7 @@
 // }
 
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 // use serde_json::json;
 // use vercel_runtime::Response;
 // use axum::body::Body;
@@ -198,10 +199,10 @@ pub struct CheckOutput {
     words: puzzle::Words,
 }
 
-pub fn check_puzzle(inp: CheckInput) -> Result<CheckOutput, ErrorResponse> {
+pub async fn check_puzzle(inp: CheckInput) -> Result<CheckOutput, ErrorResponse> {
     let all_puzzles = super::get_puzzles();
     // println!("{:?}", all_puzzles);
-    let puzzle = match all_puzzles.get(&inp.puzzle_id) {
+    let puzzle = match all_puzzles.await.get(&inp.puzzle_id) {
         Some(puzzle) => puzzle,
         None => return Err(ErrorResponse("invalid puzzle id".to_string())),
     };
@@ -217,4 +218,44 @@ pub fn check_puzzle(inp: CheckInput) -> Result<CheckOutput, ErrorResponse> {
     Ok(CheckOutput {
         words: puzzle.compare_found_words(found_words),
     })
+}
+
+#[derive(Deserialize)]
+pub struct CreateInput {
+    puzzle_id: String,
+    width: usize,
+    height: usize,
+    letters: String,
+    words: HashSet<String>,
+}
+
+pub async fn create(
+    // State(state): State<AppState>,
+    // Json(param): Json<CreatePuzzleParams>,
+    inp: CreateInput,
+) -> Result<(), ErrorResponse> {
+    let puzzle = match puzzle::Puzzle::create(inp.width, inp.height, inp.letters, inp.words) {
+        Ok(puzzle) => puzzle,
+        Err(error) => {
+            // println!("Err: {}", msg);
+            return Err(ErrorResponse(error));
+        }
+    };
+
+    let words: Vec<String> = puzzle.words.iter().cloned().collect();
+
+    // puzzle.to_file(format!("{}/{}.json", state.puzzle_path, param.puzzle_id).as_str());
+    sqlx::query!(
+        "INSERT INTO puzzles (id, letters, width, height, words) VALUES ($1, $2, $3, $4, $5)",
+        inp.puzzle_id,
+        puzzle.letters,
+        puzzle.width as i32,
+        puzzle.height as i32,
+        &words as &[String],
+    )
+    .execute(super::get_puzzles_pool())
+    .await
+    .map_err(|e| ErrorResponse(e.to_string()))?;
+
+    Ok(())
 }

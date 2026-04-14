@@ -1,22 +1,18 @@
 use serde_json::{Value, json};
 use vercel_runtime::{Error, Request, run, service_fn};
 
-use reweave::api::{FindInput, find};
+use reweave::api::{CreateInput, create};
 
 // async fn handler(req: Request) -> Result<Response<Body>, Error> {
 async fn handler(req: Request) -> Result<Value, Error> {
     let query = req.uri().query().unwrap_or("");
 
-    let params: FindInput = serde_urlencoded::from_str(query)
+    let params: CreateInput = serde_urlencoded::from_str(query)
         .map_err(Box::<dyn std::error::Error + Send + Sync>::from)?;
-    // let params: FindInput = match serde_urlencoded::from_str(query) {
-    //     Ok(params) => params,
-    //     Err(e) => return Ok(build_error(e.to_string())),
-    // };
 
     // Ok(build_response(find(params)))
-    match find(params) {
-        Ok(out) => Ok(json!(out)),
+    match create(params).await {
+        Ok(_) => Ok(json!({})),
         Err(e) => Ok(json!({ "error": e.0 })),
     }
 }
