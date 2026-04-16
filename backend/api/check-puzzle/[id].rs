@@ -26,6 +26,5 @@ async fn handler(req: Request) -> Result<Value, Error> {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // run(handler).await
     run(service_fn(handler)).await
 }

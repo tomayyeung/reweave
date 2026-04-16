@@ -3,16 +3,14 @@ use vercel_runtime::{Error, Request, run, service_fn};
 
 use reweave::api::{CreateInput, create};
 
-// async fn handler(req: Request) -> Result<Response<Body>, Error> {
 async fn handler(req: Request) -> Result<Value, Error> {
     let query = req.uri().query().unwrap_or("");
 
     let params: CreateInput = serde_urlencoded::from_str(query)
         .map_err(Box::<dyn std::error::Error + Send + Sync>::from)?;
 
-    // Ok(build_response(find(params)))
     match create(params).await {
-        Ok(_) => Ok(json!({})),
+        Ok(_) => Ok(json!(null)),
         Err(e) => Ok(json!({ "error": e.0 })),
     }
 }
