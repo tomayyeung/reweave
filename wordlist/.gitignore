@@ -1,3 +1,4 @@
 /target
 
-*.txt
+blacklist.txt
+CSW24.txt

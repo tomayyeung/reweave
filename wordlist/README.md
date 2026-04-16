@@ -1,0 +1,3 @@
+- Wordlist is originally the 2024 Collins Scrabble word list.
+- A modified version of [a blacklist](https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words?tab=readme-ov-file) is used to filter out some words - I probably missed a couple.
+- TODO: Scrabble limits words to 15 letters. There are words longer than 15 letters. Need to add those.
