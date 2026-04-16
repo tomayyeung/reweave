@@ -1,8 +1,8 @@
-use serde_json::{Value, json};
+use serde_json::Value;
 use std::collections::HashMap;
 use vercel_runtime::{Error, Request, run, service_fn};
 
-use reweave::api::{CheckInput, check_puzzle};
+use reweave::api::{CheckInput, build_api_output, check_puzzle};
 
 async fn handler(req: Request) -> Result<Value, Error> {
     // Path for puzzle id
@@ -18,10 +18,7 @@ async fn handler(req: Request) -> Result<Value, Error> {
         .ok_or("Invalid letters input")?
         .clone();
 
-    match check_puzzle(CheckInput { letters, puzzle_id }).await {
-        Ok(out) => Ok(json!(out)),
-        Err(e) => Ok(json!({"error": e.0})),
-    }
+    build_api_output(check_puzzle(CheckInput { letters, puzzle_id }).await)
 }
 
 #[tokio::main]

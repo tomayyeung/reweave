@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
 use std::collections::HashSet;
+use vercel_runtime::Error;
 
 use crate::{
     data::{board, puzzle},
@@ -8,6 +10,14 @@ use crate::{
 
 #[derive(Serialize)]
 pub struct ErrorResponse(pub String);
+
+/// From a helper method, build an output for an API endpoint
+pub fn build_api_output<T: Serialize>(out: Result<T, ErrorResponse>) -> Result<Value, Error> {
+    match out {
+        Ok(out) => Ok(json!(out)),
+        Err(e) => Ok(json!({ "error": e.0 })),
+    }
+}
 
 #[derive(Deserialize)]
 pub struct FindInput {

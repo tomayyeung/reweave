@@ -15,8 +15,8 @@ pub struct Board {
     pub cells: Vec<Vec<Option<char>>>,
 }
 
-pub const BLANK: char = '_';
-pub const HOLE: char = '!';
+const BLANK: char = '_';
+const HOLE: char = '!';
 
 impl Board {
     /// Create a Board given a width, height, and a vector of characters

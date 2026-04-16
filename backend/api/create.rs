@@ -1,7 +1,7 @@
-use serde_json::{Value, json};
+use serde_json::Value;
 use vercel_runtime::{Error, Request, run, service_fn};
 
-use reweave::api::{CreateInput, create};
+use reweave::api::{CreateInput, build_api_output, create};
 
 async fn handler(req: Request) -> Result<Value, Error> {
     let query = req.uri().query().unwrap_or("");
@@ -9,10 +9,7 @@ async fn handler(req: Request) -> Result<Value, Error> {
     let params: CreateInput = serde_urlencoded::from_str(query)
         .map_err(Box::<dyn std::error::Error + Send + Sync>::from)?;
 
-    match create(params).await {
-        Ok(_) => Ok(json!(null)),
-        Err(e) => Ok(json!({ "error": e.0 })),
-    }
+    build_api_output(create(params).await)
 }
 
 #[tokio::main]
