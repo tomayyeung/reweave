@@ -1,9 +1,8 @@
 use sqlx::PgPool;
-use std::collections::HashMap;
 use std::error::Error;
-use std::fs;
 use std::sync::OnceLock;
-use tokio::sync::OnceCell;
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
 
 pub mod api;
 mod data;
@@ -24,36 +23,10 @@ pub fn get_words() -> &'static Trie {
 }
 
 pub static PUZZLES_POOL: OnceLock<PgPool> = OnceLock::new();
-static PUZZLES: OnceCell<HashMap<String, Puzzle>> = OnceCell::const_new();
-
-fn load_puzzles_from_dir(dir: &str) -> Result<HashMap<String, Puzzle>, Box<dyn Error>> {
-    let mut puzzles = HashMap::new();
-
-    for entry in fs::read_dir(dir)? {
-        let entry = entry?;
-        let path = entry.path();
-
-        // only process .json files
-        if path.extension().and_then(|s| s.to_str()) == Some("json") {
-            let data = fs::read_to_string(&path)?;
-            let puzzle: Puzzle = serde_json::from_str(&data)?;
-
-            // use filename (without extension) as ID
-            let id = path
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .ok_or("invalid filename")?
-                .to_string();
-
-            puzzles.insert(id, puzzle);
-        }
-    }
-
-    Ok(puzzles)
-}
 
 #[derive(sqlx::FromRow)]
 struct PuzzleRow {
+    #[allow(unused)]
     pub id: String,
     pub width: i32,
     pub height: i32,
@@ -77,32 +50,44 @@ pub fn get_puzzles_pool() -> &'static PgPool {
         .get_or_init(|| PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap()).unwrap())
 }
 
-/// Loads in all puzzles stored in the database
-///
-/// caveat: stale data. if a new puzzle is created, it won't appear. Need to reload on write or just query db directly
-async fn load_puzzles_from_db() -> Result<HashMap<String, Puzzle>, Box<dyn Error>> {
-    let pool = get_puzzles_pool();
-    let rows = sqlx::query_as!(PuzzleRow, "SELECT * FROM puzzles")
-        .fetch_all(pool)
-        .await?;
+pub async fn get_puzzle(puzzle_id: &str) -> Option<Puzzle> {
+    if std::env::var("USE_LOCAL_FILES").is_ok() {
+        Puzzle::from_file(format!("../puzzles/{}", puzzle_id).as_str()).ok()
+    } else {
+        let Ok(puzzle_row) = sqlx::query_as::<_, PuzzleRow>(" SELECT * FROM puzzles WHERE id = $1")
+            .bind(puzzle_id)
+            .fetch_one(get_puzzles_pool())
+            .await
+        else {
+            return None;
+        };
 
-    Ok(rows
-        .into_iter()
-        .map(|p| (p.id.clone(), Puzzle::from(p)))
-        .collect())
+        Some(Puzzle::from(puzzle_row))
+    }
 }
 
-/// on dev set env variable USE_LOCAL_FILES=1 for just using a directory containing puzzles
-pub async fn get_puzzles() -> &'static HashMap<String, Puzzle> {
-    PUZZLES
-        .get_or_init(|| async {
-            if std::env::var("USE_LOCAL_FILES").is_ok() {
-                load_puzzles_from_dir("../puzzles")
-            } else {
-                load_puzzles_from_db().await
-            }
-            .map_err(|e| format!("Error loading puzzles: {}", e))
-            .unwrap()
-        })
-        .await
+pub async fn insert_puzzle_into_db(id: String, puzzle: Puzzle) -> Result<(), Box<dyn Error>> {
+    if std::env::var("USE_LOCAL_FILES").is_ok() {
+        let json_data = serde_json::to_string(&puzzle)?;
+        let mut file = File::create(format!("../puzzles/{}", id)).await?;
+        file.write_all(json_data.as_bytes()).await?;
+        file.flush().await?;
+
+        Ok(())
+    } else {
+        let words: Vec<String> = puzzle.words.iter().cloned().collect();
+
+        sqlx::query(
+            "INSERT INTO puzzles (id, letters, width, height, words) VALUES ($1, $2, $3, $4, $5)",
+        )
+        .bind(id)
+        .bind(puzzle.letters)
+        .bind(puzzle.width as i32)
+        .bind(puzzle.height as i32)
+        .bind(&words as &[String])
+        .execute(get_puzzles_pool())
+        .await?;
+
+        Ok(())
+    }
 }

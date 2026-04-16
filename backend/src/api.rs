@@ -135,7 +135,7 @@ use std::collections::HashSet;
 // use axum::body::Body;
 // use http::StatusCode;
 
-use crate::data::{board, puzzle};
+use crate::{data::{board, puzzle}, get_puzzle};
 
 #[derive(Serialize)]
 pub struct ErrorResponse(pub String);
@@ -200,9 +200,7 @@ pub struct CheckOutput {
 }
 
 pub async fn check_puzzle(inp: CheckInput) -> Result<CheckOutput, ErrorResponse> {
-    let all_puzzles = super::get_puzzles();
-    // println!("{:?}", all_puzzles);
-    let puzzle = match all_puzzles.await.get(&inp.puzzle_id) {
+    let puzzle = match get_puzzle(&inp.puzzle_id).await {
         Some(puzzle) => puzzle,
         None => return Err(ErrorResponse("invalid puzzle id".to_string())),
     };
@@ -230,8 +228,6 @@ pub struct CreateInput {
 }
 
 pub async fn create(
-    // State(state): State<AppState>,
-    // Json(param): Json<CreatePuzzleParams>,
     inp: CreateInput,
 ) -> Result<(), ErrorResponse> {
     let puzzle = match puzzle::Puzzle::create(inp.width, inp.height, inp.letters, inp.words) {
@@ -242,20 +238,8 @@ pub async fn create(
         }
     };
 
-    let words: Vec<String> = puzzle.words.iter().cloned().collect();
-
-    // puzzle.to_file(format!("{}/{}.json", state.puzzle_path, param.puzzle_id).as_str());
-    sqlx::query!(
-        "INSERT INTO puzzles (id, letters, width, height, words) VALUES ($1, $2, $3, $4, $5)",
-        inp.puzzle_id,
-        puzzle.letters,
-        puzzle.width as i32,
-        puzzle.height as i32,
-        &words as &[String],
-    )
-    .execute(super::get_puzzles_pool())
-    .await
-    .map_err(|e| ErrorResponse(e.to_string()))?;
+    super::insert_puzzle_into_db(inp.puzzle_id, puzzle)
+        .await.map_err(|e| ErrorResponse(e.to_string()))?;
 
     Ok(())
 }
@@ -268,8 +252,7 @@ pub struct LoadInput {
 pub async fn load_puzzle(
     inp: LoadInput,
 ) -> Result<puzzle::Puzzle, ErrorResponse> {
-    let all_puzzles = super::get_puzzles();
-    match all_puzzles.await.get(&inp.puzzle_id) {
+    match super::get_puzzle(&inp.puzzle_id).await {
         Some(puzzle) => Ok(puzzle.clone()),
         None => return Err(ErrorResponse("invalid puzzle id".to_string())),
     }

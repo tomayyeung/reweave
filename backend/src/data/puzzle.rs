@@ -1,6 +1,6 @@
 use std::collections::HashSet;
-// use std::error::Error;
-// use std::fs::File;
+use std::error::Error;
+use std::fs::File;
 
 use serde::{Deserialize, Serialize};
 
@@ -83,11 +83,11 @@ impl Puzzle {
     //     serde_json::to_writer(file, &self).unwrap();
     // }
 
-    // pub fn from_file(path: &str) -> Result<Self, Box<dyn Error>> {
-    //     let data = File::open(path)?;
-    //     let puzzle = serde_json::from_reader(data)?;
-    //     Ok(puzzle)
-    // }
+    pub fn from_file(path: &str) -> Result<Self, Box<dyn Error>> {
+        let data = File::open(path)?;
+        let puzzle = serde_json::from_reader(data)?;
+        Ok(puzzle)
+    }
 }
 
 #[cfg(test)]
