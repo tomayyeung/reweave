@@ -259,3 +259,18 @@ pub async fn create(
 
     Ok(())
 }
+
+#[derive(Deserialize)]
+pub struct LoadInput {
+    pub puzzle_id: String,
+}
+
+pub async fn load_puzzle(
+    inp: LoadInput,
+) -> Result<puzzle::Puzzle, ErrorResponse> {
+    let all_puzzles = super::get_puzzles();
+    match all_puzzles.await.get(&inp.puzzle_id) {
+        Some(puzzle) => Ok(puzzle.clone()),
+        None => return Err(ErrorResponse("invalid puzzle id".to_string())),
+    }
+}

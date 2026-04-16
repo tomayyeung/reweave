@@ -26,12 +26,18 @@ name = "find"
 path = "api/find.rs"
 
 [[bin]]
-name = "_id_"
+# name = "_id_"
+name = "check-puzzle_id"
 path = "api/check-puzzle/[id].rs"
 
 [[bin]]
 name = "create"
 path = "api/create.rs"
+
+[[bin]]
+# name = "_id_"
+name = "puzzle_id"
+path = "api/puzzle/[id].rs"
 
 [profile.release]
 codegen-units = 1
