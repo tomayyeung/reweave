@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 
-import { Board, BLANK } from "@components/Board";
+// import { Board, BLANK } from "@components/Board";
+import { Board, BLANK } from "@/components/Board";
 import { CreateWordList } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
 
 import styles from "./Create.module.css";
-import { API_URL } from "src/config";
+import { API_URL } from "@/config";
+import { getWasm } from "@/wasm";
 
 export default function CreatePage() {
   const w = 3;
@@ -23,12 +25,19 @@ export default function CreatePage() {
         return;
       }
 
-      fetch(`${API_URL}/api/find?width=${w}&height=${h}&letters=${boardLetters}`)
-        .then((res) => res.json())
-        .then((data) => {
-          // console.log(data)
-          setWords(data);
-        });
+      const wasm = await getWasm();
+      try {
+        setWords(wasm.find(w, h, boardLetters));
+      } catch (e) {
+        console.log(e);
+      }
+
+      // fetch(`${API_URL}/api/find?width=${w}&height=${h}&letters=${boardLetters}`)
+      //   .then((res) => res.json())
+      //   .then((data) => {
+      //     console.log(data)
+      //     setWords(data.words);
+      //   });
     };
 
     updateWords();

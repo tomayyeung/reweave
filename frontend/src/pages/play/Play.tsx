@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 
-import { Board, BLANK } from "@components/Board";
+// import { Board, BLANK } from "@components/Board";
+import { Board, BLANK } from "@/components/Board"
 import { PlayWordList } from "@components/WordList";
 import type { Words } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
 import { useParams } from "react-router-dom";
-import { API_URL } from "src/config";
+import { API_URL } from "@/config";
 
 export default function PlayPage() {
   const { puzzleId } = useParams();

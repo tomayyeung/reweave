@@ -4,9 +4,6 @@ use std::fs::File;
 
 use serde::{Deserialize, Serialize};
 
-use super::board::*;
-use super::words::*;
-
 /// A struct for the output of comparing words in a board
 /// to words a puzzle requires.
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
@@ -31,23 +28,6 @@ pub struct Puzzle {
 }
 
 impl Puzzle {
-    #[allow(unused)]
-    pub fn from_board(board: &Board, word_list: &Trie) -> Self {
-        Puzzle {
-            width: board.width,
-            height: board.height,
-            // holes: board.get_empty_cells(),
-            // starting_letters: vec![],
-            letters: board
-                .cells
-                .iter()
-                .flat_map(|row| row.iter())
-                .map(|cell| cell.unwrap_or('_'))
-                .collect(),
-            words: find_words(board, word_list).into_iter().collect(),
-        }
-    }
-
     /// Create a puzzle from a starting board and a list of words
     /// For holes in the puzzle use '!'
     pub fn create(
@@ -95,6 +75,22 @@ mod tests {
     use std::vec;
 
     use super::*;
+    use crate::board::*;
+    use crate::words::*;
+
+    fn from_board(board: &Board, word_list: &Trie) -> Puzzle {
+        Puzzle {
+            width: board.width,
+            height: board.height,
+            letters: board
+                .cells
+                .iter()
+                .flat_map(|row| row.iter())
+                .map(|cell| cell.unwrap_or('_'))
+                .collect(),
+            words: find_words(board, word_list).into_iter().collect(),
+        }
+    }
 
     #[test]
     fn cmp_words() {
@@ -117,7 +113,7 @@ mod tests {
     fn cmp_puzzle_from() {
         let board = Board::create(2, 2, vec!['c', 'a', 't', 's']).unwrap();
         let word_list = Trie::new(vec!["act", "cat", "cats"]);
-        let puzzle = Puzzle::from_board(&board, &word_list);
+        let puzzle = from_board(&board, &word_list);
 
         let mut words = puzzle.compare_found_words(vec![
             "act".to_string(),

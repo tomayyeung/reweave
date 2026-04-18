@@ -5,22 +5,7 @@ use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 
 pub mod api;
-mod data;
-
-use crate::data::puzzle::Puzzle;
-use crate::data::words::Trie;
-
-static WORDS: OnceLock<Trie> = OnceLock::new();
-
-pub fn get_words() -> &'static Trie {
-    WORDS.get_or_init(|| {
-        Trie::new(
-            include_str!("../../wordlist/wordlist.txt")
-                .lines()
-                .collect(),
-        )
-    })
-}
+use common::puzzle::Puzzle;
 
 pub static PUZZLES_POOL: OnceLock<PgPool> = OnceLock::new();
 

@@ -3,10 +3,7 @@ use serde_json::{Value, json};
 use std::collections::HashSet;
 use vercel_runtime::Error;
 
-use crate::{
-    data::{board, puzzle},
-    get_puzzle,
-};
+use common::puzzle;
 
 #[derive(Serialize)]
 pub struct ErrorResponse(pub String);
@@ -17,61 +14,6 @@ pub fn build_api_output<T: Serialize>(out: Result<T, ErrorResponse>) -> Result<V
         Ok(out) => Ok(json!(out)),
         Err(e) => Ok(json!({ "error": e.0 })),
     }
-}
-
-#[derive(Deserialize)]
-pub struct FindInput {
-    width: usize,
-    height: usize,
-    letters: String,
-}
-
-#[derive(Serialize)]
-pub struct FindOutput {
-    words: Vec<String>,
-}
-
-pub fn find(inp: FindInput) -> Result<FindOutput, ErrorResponse> {
-    let board = match board::Board::create(inp.width, inp.height, inp.letters.chars().collect()) {
-        Ok(board) => board,
-        Err(error) => {
-            return Err(ErrorResponse(error));
-        }
-    };
-
-    Ok(FindOutput {
-        words: board::find_words(&board, super::get_words()),
-    })
-}
-
-#[derive(Deserialize)]
-pub struct CheckInput {
-    pub letters: String,
-    pub puzzle_id: String,
-}
-
-#[derive(Serialize)]
-pub struct CheckOutput {
-    words: puzzle::Words,
-}
-
-pub async fn check_puzzle(inp: CheckInput) -> Result<CheckOutput, ErrorResponse> {
-    let puzzle = match get_puzzle(&inp.puzzle_id).await {
-        Some(puzzle) => puzzle,
-        None => return Err(ErrorResponse("invalid puzzle id".to_string())),
-    };
-
-    let board =
-        match board::Board::create(puzzle.width, puzzle.height, inp.letters.chars().collect()) {
-            Ok(board) => board,
-            Err(error) => return Err(ErrorResponse(error)),
-        };
-
-    let found_words = board::find_words(&board, super::get_words());
-
-    Ok(CheckOutput {
-        words: puzzle.compare_found_words(found_words),
-    })
 }
 
 #[derive(Deserialize)]

@@ -86,6 +86,8 @@ export function PlayWordList({ words }: { words: Words }) {
 }
 
 export function CreateWordList({ words }: { words: string[] }) {
+  console.log(words);
+  console.log(typeof(words));
   const sortedWords = groupAndSort(words);
 
   return (

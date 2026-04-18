@@ -1,7 +1,7 @@
 use serde_json::Value;
 use vercel_runtime::{Error, Request, run, service_fn};
 
-use reweave::api::{LoadInput, build_api_output, load_puzzle};
+use backend::api::{LoadInput, build_api_output, load_puzzle};
 
 async fn handler(req: Request) -> Result<Value, Error> {
     // Path for puzzle id
