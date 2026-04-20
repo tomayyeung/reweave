@@ -75,8 +75,8 @@ mod tests {
     use std::vec;
 
     use super::*;
-    use crate::board::*;
-    use crate::words::*;
+    use crate::common::board::*;
+    use crate::common::words::*;
 
     fn from_board(board: &Board, word_list: &Trie) -> Puzzle {
         Puzzle {

@@ -30,19 +30,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
-name = "backend"
-version = "0.1.0"
-dependencies = [
- "common",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "sqlx",
- "tokio",
- "vercel_runtime",
-]
-
-[[package]]
 name = "base64"
 version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -105,14 +92,6 @@ name = "cfg-if"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
-
-[[package]]
-name = "common"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "concurrent-queue"
@@ -323,7 +302,7 @@ dependencies = [
 name = "frontend"
 version = "0.1.0"
 dependencies = [
- "common",
+ "reweave",
  "serde-wasm-bindgen",
  "wasm-bindgen",
 ]
@@ -1040,6 +1019,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f450ad9c3b1da563fb6948a8e0fb0fb9269711c9c73d9ea1de5058c79c8d643a"
 dependencies = [
  "bitflags",
+]
+
+[[package]]
+name = "reweave"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "sqlx",
+ "tokio",
+ "vercel_runtime",
 ]
 
 [[package]]

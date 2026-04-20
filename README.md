@@ -14,3 +14,4 @@ Player is given a list of words and must reconstruct a board of letters that all
 ## Backend
 - Rust runtime on Vercel serverless functions.
 - Database for puzzles (and users?): Neon Serverless Postgres (subject to change)
+- Deployed separately from frontend

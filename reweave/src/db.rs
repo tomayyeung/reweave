@@ -1,15 +1,12 @@
+#![cfg(not(target_arch = "wasm32"))]
+
 use sqlx::PgPool;
 use std::error::Error;
 use std::sync::OnceLock;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 
-pub mod helper;
-pub mod health;
-pub mod create;
-pub mod puzzle;
-
-use common::puzzle::Puzzle;
+use crate::common::puzzle::Puzzle;
 
 pub static PUZZLES_POOL: OnceLock<PgPool> = OnceLock::new();
 

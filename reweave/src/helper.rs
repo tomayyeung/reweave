@@ -1,9 +1,12 @@
+#![cfg(not(target_arch = "wasm32"))]
+
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::collections::HashSet;
 use vercel_runtime::Error;
 
-use common::puzzle;
+use crate::common::puzzle;
+use crate::db::*;
 
 #[derive(Serialize)]
 pub struct ErrorResponse(pub String);
@@ -34,7 +37,7 @@ pub async fn create(inp: CreateInput) -> Result<(), ErrorResponse> {
         }
     };
 
-    super::insert_puzzle_into_db(inp.puzzle_id, puzzle)
+    insert_puzzle_into_db(inp.puzzle_id, puzzle)
         .await
         .map_err(|e| ErrorResponse(e.to_string()))?;
 
@@ -47,7 +50,7 @@ pub struct LoadInput {
 }
 
 pub async fn load_puzzle(inp: LoadInput) -> Result<puzzle::Puzzle, ErrorResponse> {
-    match super::get_puzzle(&inp.puzzle_id).await {
+    match get_puzzle(&inp.puzzle_id).await {
         Some(puzzle) => Ok(puzzle.clone()),
         None => Err(ErrorResponse("invalid puzzle id".to_string())),
     }

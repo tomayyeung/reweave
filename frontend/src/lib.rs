@@ -1,7 +1,7 @@
 use std::sync::{OnceLock, RwLock};
 use wasm_bindgen::prelude::*;
 
-use common::*;
+use reweave::common::*;
 
 static WORDS: OnceLock<words::Trie> = OnceLock::new();
 

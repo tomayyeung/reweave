@@ -1,9 +1,0 @@
-[package]
-name = "common"
-version = "0.1.0"
-edition = "2024"
-description = "Holds common data that both back and frontend need."
-
-[dependencies]
-serde = { workspace = true }
-serde_json = { workspace = true }

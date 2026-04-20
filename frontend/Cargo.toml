@@ -8,7 +8,8 @@ description = "Frontend package. Deals with gameplay logic."
 crate-type = ["cdylib"]
 
 [dependencies]
-common = { path = "../common" }
+# common = { path = "../reweave/common" }
+reweave = { path = "../reweave" }
 
 serde-wasm-bindgen = "0.6.5"
 wasm-bindgen = "0.2.118"
