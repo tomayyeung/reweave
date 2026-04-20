@@ -7,7 +7,8 @@ import { Wrapper } from "@components/Wrapper";
 
 import styles from "./Create.module.css";
 import { API_URL } from "@/config";
-import { getWasm } from "@/wasm";
+
+import { find } from "@wasm/frontend";
 
 export default function CreatePage() {
   const w = 3;
@@ -25,9 +26,8 @@ export default function CreatePage() {
         return;
       }
 
-      const wasm = await getWasm();
       try {
-        setWords(wasm.find(w, h, boardLetters));
+        setWords(find(w, h, boardLetters));
       } catch (e) {
         console.log(e);
       }

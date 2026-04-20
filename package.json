@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"dev": "concurrently \"cargo run --manifest-path backend/Cargo.toml\" \"pnpm --dir frontend dev\""
+		"dev": "concurrently \"vc dev --cwd backend\" \"pnpm --dir frontend dev\""
 	},
 	"devDependencies": {
 		"concurrently": "^9.2.1"
