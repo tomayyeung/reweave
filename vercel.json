@@ -2,6 +2,14 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ],
+  "functions": {
+    "api/create.rs": {
+      "runtime": "vercel-rust@latest"
+    },
+    "api/puzzle/[id].rs": {
+      "runtime": "vercel-rust@latest"
+    }
+  },
   "installCommand": "rustup target add wasm32-unknown-unknown && cargo install wasm-pack && pnpm install --dir frontend",
   "buildCommand": "wasm-pack build frontend --target bundler --out-dir pkg && pnpm --dir frontend run build",
   "outputDirectory": "frontend/dist"
