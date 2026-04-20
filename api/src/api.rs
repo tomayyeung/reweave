@@ -1,54 +1,20 @@
-use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
-use std::collections::HashSet;
-use vercel_runtime::Error;
+use serde_json::{json, Value};
+use vercel_runtime::{Error, Request, run, service_fn};
 
-use common::puzzle;
+use backend::{create, health, puzzle};
 
-#[derive(Serialize)]
-pub struct ErrorResponse(pub String);
-
-/// From a helper method, build an output for an API endpoint
-pub fn build_api_output<T: Serialize>(out: Result<T, ErrorResponse>) -> Result<Value, Error> {
-    match out {
-        Ok(out) => Ok(json!(out)),
-        Err(e) => Ok(json!({ "error": e.0 })),
+async fn handler(req: Request) -> Result<Value, Error> {
+    let path = req.uri().path();
+    match path {
+        "/api/health" => health::handler(req).await,
+        "/api/create" => create::handler(req).await,
+        p if p.starts_with("/api/puzzle/") => puzzle::handler(req).await,
+        _ => Ok(json!({ "error": "not found" }))
     }
 }
 
-#[derive(Deserialize)]
-pub struct CreateInput {
-    puzzle_id: String,
-    width: usize,
-    height: usize,
-    letters: String,
-    words: HashSet<String>,
-}
-
-pub async fn create(inp: CreateInput) -> Result<(), ErrorResponse> {
-    let puzzle = match puzzle::Puzzle::create(inp.width, inp.height, inp.letters, inp.words) {
-        Ok(puzzle) => puzzle,
-        Err(error) => {
-            // println!("Err: {}", msg);
-            return Err(ErrorResponse(error));
-        }
-    };
-
-    super::insert_puzzle_into_db(inp.puzzle_id, puzzle)
-        .await
-        .map_err(|e| ErrorResponse(e.to_string()))?;
-
-    Ok(())
-}
-
-#[derive(Deserialize)]
-pub struct LoadInput {
-    pub puzzle_id: String,
-}
-
-pub async fn load_puzzle(inp: LoadInput) -> Result<puzzle::Puzzle, ErrorResponse> {
-    match super::get_puzzle(&inp.puzzle_id).await {
-        Some(puzzle) => Ok(puzzle.clone()),
-        None => Err(ErrorResponse("invalid puzzle id".to_string())),
-    }
+// vc dev is shit: cargo build --bin api && ./target/debug/api
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    run(service_fn(handler)).await
 }

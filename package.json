@@ -1,8 +1,0 @@
-{
-	"scripts": {
-		"dev": "concurrently \"vc dev --cwd backend\" \"pnpm --dir frontend dev\""
-	},
-	"devDependencies": {
-		"concurrently": "^9.2.1"
-	}
-}

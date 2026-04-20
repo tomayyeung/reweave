@@ -4,7 +4,11 @@ use std::sync::OnceLock;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 
-pub mod api;
+pub mod helper;
+pub mod health;
+pub mod create;
+pub mod puzzle;
+
 use common::puzzle::Puzzle;
 
 pub static PUZZLES_POOL: OnceLock<PgPool> = OnceLock::new();
