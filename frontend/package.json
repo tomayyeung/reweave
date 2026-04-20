@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "vercel-install": "curl https://sh.rustup.rs -sSf | sh -s -- -y && source $HOME/.cargo/env && cargo install wasm-pack && npm install",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

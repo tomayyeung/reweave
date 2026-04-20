@@ -1,5 +1,8 @@
 {
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
-  ]
+  ],
+  "installCommand": "curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable && source $HOME/.cargo/env && cargo install wasm-pack && pnpm install",
+  "buildCommand": "wasm-pack build --target bundler --out-dir pkg && pnpm run build",
+  "outputDirectory": "dist"
 }
