@@ -1,8 +1,6 @@
 use serde_json::{Value, json};
 use vercel_runtime::{Error, Request};
 
-// use crate::helper::{build_api_output};
-
 use reweave::helper::build_api_output;
 use vercel_runtime::{run, service_fn};
 

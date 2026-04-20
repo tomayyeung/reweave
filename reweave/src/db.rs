@@ -1,5 +1,3 @@
-#![cfg(not(target_arch = "wasm32"))]
-
 use sqlx::PgPool;
 use std::error::Error;
 use std::sync::OnceLock;

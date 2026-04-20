@@ -14,24 +14,20 @@ serde_urlencoded = "0.7.1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 vercel_runtime = "2"
-tokio = { version = "1", features = ["fs", "io-util"] } # rt, macros
+tokio = { version = "1", features = ["fs", "io-util"] }
 sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio-rustls"] }
 
 [lib]
 path = "src/lib.rs"
 
-# [[bin]]
-# name = "api"
-# path = "api.rs"
-
 [[bin]]
 name = "health"
 path = "api/health.rs"
 
-# [[bin]]
-# name = "create"
-# path = "api/create.rs"
+[[bin]]
+name = "create"
+path = "api/create.rs"
 
-# [[bin]]
-# name = "puzzle"
-# path = "api/puzzle/[id].rs"
+[[bin]]
+name = "puzzle"
+path = "api/puzzle/[id].rs"
