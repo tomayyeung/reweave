@@ -19,13 +19,8 @@ path = "src/lib.rs"
 
 [[bin]]
 name = "create"
-path = "api/create.rs"
+path = "create.rs"
 
 [[bin]]
 name = "puzzle_id"
-path = "api/puzzle/[id].rs"
-
-[profile.release]
-codegen-units = 1
-lto = "fat"
-opt-level = 3
+path = "puzzle/[id].rs"
