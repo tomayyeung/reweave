@@ -3,6 +3,6 @@
     { "source": "/(.*)", "destination": "/" }
   ],
   "installCommand": "rustup target add wasm32-unknown-unknown && cargo install wasm-pack && pnpm install --dir frontend",
-  "buildCommand": "wasm-pack build frontend --target bundler --out-dir frontend/pkg && pnpm run build --dir frontend",
+  "buildCommand": "wasm-pack build frontend --target bundler --out-dir pkg && pnpm --dir frontend run build",
   "outputDirectory": "frontend/dist"
 }
