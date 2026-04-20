@@ -28,4 +28,7 @@ export default defineConfig({
       allow: [".."]
     }
   },
+  build: {
+    target: "esnext"
+  }
 })
