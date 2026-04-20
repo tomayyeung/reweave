@@ -1,9 +1,8 @@
 {
-  "nodejs": "20.x",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/src/api.rs" }
   ],
-  "installCommand": "rustup target add wasm32-unknown-unknown && cargo install wasm-pack && pnpm install --dir frontend",
+  "installCommand": "rustup target add wasm32-unknown-unknown && cargo install wasm-pack && npm i -g pnpm@9 && pnpm install --dir frontend",
   "buildCommand": "wasm-pack build frontend --target bundler --out-dir pkg && pnpm --dir frontend run build",
   "outputDirectory": "frontend/dist"
 }
