@@ -2,7 +2,7 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ],
-  "installCommand": "cargo install wasm-pack && pnpm install",
+  "installCommand": "rustup target add wasm32-unknown-unknown && cargo install wasm-pack && pnpm install",
   "buildCommand": "wasm-pack build --target bundler --out-dir pkg && pnpm run build",
   "outputDirectory": "dist"
 }
