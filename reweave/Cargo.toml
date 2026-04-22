@@ -30,4 +30,5 @@ path = "api/create.rs"
 
 [[bin]]
 name = "puzzle"
-path = "api/puzzle/[id].rs"
+# path = "api/puzzle/[id].rs"
+path = "api/puzzle.rs"
