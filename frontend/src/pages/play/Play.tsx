@@ -8,6 +8,8 @@ import { Wrapper } from "@components/Wrapper";
 import { useParams } from "react-router-dom";
 import { API_URL } from "@/config";
 
+import { check } from "@wasm/frontend";
+
 export default function PlayPage() {
   const { puzzleId } = useParams();
 
@@ -24,7 +26,9 @@ export default function PlayPage() {
   });
 
   useEffect(() => {
-    fetch(`${API_URL}/api/puzzle/${puzzleId}`)
+    const route = `${API_URL}/api/puzzle/${puzzleId}`;
+    console.log(route);
+    fetch(route)
       .then((res) => res.json())
       .then((puzzle) => {
         console.log(puzzle);
@@ -50,12 +54,14 @@ export default function PlayPage() {
       return;
     }
 
-    fetch(`${API_URL}/api/check-puzzle/${puzzleId}/letters/${boardLetters}`)
-      .then((res) => res.json())
-      .then((data) => {
-        // console.log(data)
-        setWords(data);
-      });
+    setWords(check(boardLetters));
+
+    // fetch(`${API_URL}/api/check-puzzle/${puzzleId}/letters/${boardLetters}`)
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     // console.log(data)
+    //     setWords(data);
+    //   });
   }, [boardLetters]);
 
   return (

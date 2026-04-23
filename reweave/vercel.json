@@ -2,5 +2,8 @@
   "rewrites": [
     { "source": "/api/puzzle/:puzzle_id", "destination": "/api/puzzle" },
     { "source": "/api/(.*)", "destination": "/api/api" }
+  ],
+  "headers":[
+    { "key": "Access-Control-Allow-Origin", "value": "*" }
   ]
 }
