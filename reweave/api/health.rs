@@ -1,11 +1,10 @@
-use serde_json::{Value, json};
-use vercel_runtime::{Error, Request};
+use serde_json::json;
+use vercel_runtime::{Error, Request, Response, ResponseBody, run, service_fn};
 
-use reweave::helper::build_api_output;
-use vercel_runtime::{run, service_fn};
+use reweave::helper::json_response;
 
-pub async fn handler(_req: Request) -> Result<Value, Error> {
-    build_api_output(Ok(json!("ok")))
+pub async fn handler(_req: Request) -> Result<Response<ResponseBody>, Error> {
+    json_response(Ok(json!("ok")))
 }
 
 #[tokio::main]

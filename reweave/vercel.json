@@ -1,9 +1,9 @@
 {
   "rewrites": [
-    { "source": "/api/puzzle/:puzzle_id", "destination": "/api/puzzle" },
+    { "source": "/api/puzzle/:puzzle_id", "destination": "/api/puzzle?puzzle_id=:puzzle_id" },
     { "source": "/api/(.*)", "destination": "/api/api" }
   ],
-  "headers":[
+  "headers": [
     {
       "source": "/api/(.*)",
       "headers": [

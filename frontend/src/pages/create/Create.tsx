@@ -44,7 +44,7 @@ export default function CreatePage() {
   }, [boardLetters]);
 
   async function submitPuzzle(formData: FormData) {
-    const res = await fetch(`${API_URL}/api/puzzle`, {
+    const res = await fetch(`${API_URL}/api/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
