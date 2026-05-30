@@ -68,5 +68,5 @@ pub fn check(letters: String) -> Result<JsValue, JsValue> {
 
     let found_words = board::find_words(&board, get_words());
     serde_wasm_bindgen::to_value(&puzzle.compare_found_words(found_words))
-        .map_err(|e| JsValue::from(e))
+        .map_err(JsValue::from)
 }
