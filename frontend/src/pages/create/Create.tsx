@@ -39,7 +39,7 @@ export default function CreatePage() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        puzzle_id: formData.get("puzzle-name"),
+        name: formData.get("puzzle-name"),
         width: w,
         height: h,
         letters: hardSet.map((isSet, i) => isSet ? boardLetters[i] : BLANK).join(""),

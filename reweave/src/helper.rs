@@ -56,7 +56,7 @@ pub async fn read_json_body<T: DeserializeOwned>(req: Request) -> Result<T, Erro
 
 #[derive(Deserialize)]
 pub struct CreateInput {
-    puzzle_id: String,
+    name: String,
     width: usize,
     height: usize,
     letters: String,
@@ -71,7 +71,7 @@ pub async fn create(inp: CreateInput) -> Result<(), ErrorResponse> {
         }
     };
 
-    insert_puzzle_into_db(inp.puzzle_id, puzzle)
+    insert_puzzle_into_db(inp.name, puzzle)
         .await
         .map_err(|e| ErrorResponse(e.to_string()))?;
 
@@ -86,6 +86,6 @@ pub struct LoadInput {
 pub async fn load_puzzle(inp: LoadInput) -> Result<puzzle::Puzzle, ErrorResponse> {
     match get_puzzle(&inp.puzzle_id).await {
         Some(puzzle) => Ok(puzzle.clone()),
-        None => Err(ErrorResponse("invalid puzzle id".to_string())),
+        None => Err(ErrorResponse(format!("invalid puzzle id: {}", &inp.puzzle_id))),
     }
 }

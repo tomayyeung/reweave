@@ -10,8 +10,6 @@ pub static PUZZLES_POOL: OnceLock<PgPool> = OnceLock::new();
 
 #[derive(sqlx::FromRow)]
 struct PuzzleRow {
-    #[allow(unused)]
-    pub id: String,
     pub width: i32,
     pub height: i32,
     pub letters: String,
@@ -38,8 +36,8 @@ pub async fn get_puzzle(puzzle_id: &str) -> Option<Puzzle> {
     if std::env::var("USE_LOCAL_FILES").is_ok() {
         Puzzle::from_file(format!("../puzzles/{}", puzzle_id).as_str()).ok()
     } else {
-        let Ok(puzzle_row) = sqlx::query_as::<_, PuzzleRow>(" SELECT * FROM puzzles WHERE id = $1")
-            .bind(puzzle_id)
+        let Ok(puzzle_row) = sqlx::query_as::<_, PuzzleRow>("SELECT width, height, letters, words FROM puzzles WHERE id = $1")
+            .bind(puzzle_id.parse::<i32>().ok()?)
             .fetch_one(get_puzzles_pool())
             .await
         else {
@@ -50,10 +48,10 @@ pub async fn get_puzzle(puzzle_id: &str) -> Option<Puzzle> {
     }
 }
 
-pub async fn insert_puzzle_into_db(id: String, puzzle: Puzzle) -> Result<(), Box<dyn Error>> {
+pub async fn insert_puzzle_into_db(name: String, puzzle: Puzzle) -> Result<(), Box<dyn Error>> {
     if std::env::var("USE_LOCAL_FILES").is_ok() {
         let json_data = serde_json::to_string(&puzzle)?;
-        let mut file = File::create(format!("../puzzles/{}", id)).await?;
+        let mut file = File::create(format!("../puzzles/{}", name)).await?;
         file.write_all(json_data.as_bytes()).await?;
         file.flush().await?;
 
@@ -62,9 +60,9 @@ pub async fn insert_puzzle_into_db(id: String, puzzle: Puzzle) -> Result<(), Box
         let words: Vec<String> = puzzle.words.iter().cloned().collect();
 
         sqlx::query(
-            "INSERT INTO puzzles (id, letters, width, height, words) VALUES ($1, $2, $3, $4, $5)",
+            "INSERT INTO puzzles (name, letters, width, height, words) VALUES ($1, $2, $3, $4, $5)",
         )
-        .bind(id)
+        .bind(name)
         .bind(puzzle.letters)
         .bind(puzzle.width as i32)
         .bind(puzzle.height as i32)
