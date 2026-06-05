@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-import { Board, BLANK } from "@/components/Board"
+import { Board, BLANK } from "@/components/Board";
 import { PlayWordList } from "@components/WordList";
 import type { Words } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
@@ -16,6 +16,8 @@ export default function PlayPage() {
 
   const [boardLetters, setBoardLetters] = useState("");
   const [hardSet, setHardSet] = useState<boolean[]>([]);
+
+  const [puzzleName, setPuzzleName] = useState("");
   const [w, setWidth] = useState(0);
   const [h, setHeight] = useState(0);
   const [words, setWords] = useState<Words>({
@@ -36,6 +38,7 @@ export default function PlayPage() {
         loadPuzzle(puzzle);
 
         // then load puzzle for rendering
+        setPuzzleName(puzzle.name);
         setWidth(puzzle.width);
         setHeight(puzzle.height);
 
@@ -64,15 +67,18 @@ export default function PlayPage() {
   return (
     <main>
       <Wrapper>
-        <Board
-          boardType="Play"
-          filteringLetters={false}
-          width={w}
-          height={h}
-          boardLetters={boardLetters}
-          hardSet={hardSet}
-          setBoardLetters={setBoardLetters}
-        />
+        <div>
+          <h3>Puzzle: {puzzleName}</h3>
+          <Board
+            boardType="Play"
+            filteringLetters={false}
+            width={w}
+            height={h}
+            boardLetters={boardLetters}
+            hardSet={hardSet}
+            setBoardLetters={setBoardLetters}
+          />
+        </div>
         <PlayWordList words={words} />
       </Wrapper>
     </main>

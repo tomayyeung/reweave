@@ -10,6 +10,7 @@ pub static PUZZLES_POOL: OnceLock<PgPool> = OnceLock::new();
 
 #[derive(sqlx::FromRow)]
 struct PuzzleRow {
+    pub name: String,
     pub width: i32,
     pub height: i32,
     pub letters: String,
@@ -19,6 +20,7 @@ struct PuzzleRow {
 impl From<PuzzleRow> for Puzzle {
     fn from(row: PuzzleRow) -> Self {
         Puzzle {
+            name: row.name,
             width: row.width as usize,
             height: row.height as usize,
             letters: row.letters,
@@ -36,7 +38,7 @@ pub async fn get_puzzle(puzzle_id: &str) -> Option<Puzzle> {
     if std::env::var("USE_LOCAL_FILES").is_ok() {
         Puzzle::from_file(format!("../puzzles/{}", puzzle_id).as_str()).ok()
     } else {
-        let Ok(puzzle_row) = sqlx::query_as::<_, PuzzleRow>("SELECT width, height, letters, words FROM puzzles WHERE id = $1")
+        let Ok(puzzle_row) = sqlx::query_as::<_, PuzzleRow>("SELECT width, height, letters, words, name FROM puzzles WHERE id = $1")
             .bind(puzzle_id.parse::<i32>().ok()?)
             .fetch_one(get_puzzles_pool())
             .await
@@ -48,10 +50,10 @@ pub async fn get_puzzle(puzzle_id: &str) -> Option<Puzzle> {
     }
 }
 
-pub async fn insert_puzzle_into_db(name: String, puzzle: Puzzle) -> Result<(), Box<dyn Error>> {
+pub async fn insert_puzzle_into_db(puzzle: Puzzle) -> Result<(), Box<dyn Error>> {
     if std::env::var("USE_LOCAL_FILES").is_ok() {
         let json_data = serde_json::to_string(&puzzle)?;
-        let mut file = File::create(format!("../puzzles/{}", name)).await?;
+        let mut file = File::create(format!("../puzzles/{}", puzzle.name)).await?;
         file.write_all(json_data.as_bytes()).await?;
         file.flush().await?;
 
@@ -62,7 +64,7 @@ pub async fn insert_puzzle_into_db(name: String, puzzle: Puzzle) -> Result<(), B
         sqlx::query(
             "INSERT INTO puzzles (name, letters, width, height, words) VALUES ($1, $2, $3, $4, $5)",
         )
-        .bind(name)
+        .bind(puzzle.name)
         .bind(puzzle.letters)
         .bind(puzzle.width as i32)
         .bind(puzzle.height as i32)

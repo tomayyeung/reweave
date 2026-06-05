@@ -64,14 +64,14 @@ pub struct CreateInput {
 }
 
 pub async fn create(inp: CreateInput) -> Result<(), ErrorResponse> {
-    let puzzle = match puzzle::Puzzle::create(inp.width, inp.height, inp.letters, inp.words) {
+    let puzzle = match puzzle::Puzzle::create(inp.name, inp.width, inp.height, inp.letters, inp.words) {
         Ok(puzzle) => puzzle,
         Err(error) => {
             return Err(ErrorResponse(error));
         }
     };
 
-    insert_puzzle_into_db(inp.name, puzzle)
+    insert_puzzle_into_db(puzzle)
         .await
         .map_err(|e| ErrorResponse(e.to_string()))?;
 

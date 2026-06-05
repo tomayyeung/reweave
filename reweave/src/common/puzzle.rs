@@ -17,6 +17,7 @@ pub struct Words {
 /// a board.
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Puzzle {
+    pub name: String,
     pub width: usize,
     pub height: usize,
     /// holes, blanks are stored in letters as !, _
@@ -28,6 +29,7 @@ impl Puzzle {
     /// Create a puzzle from a starting board and a list of words
     /// For holes in the puzzle use '!'
     pub fn create(
+        name: String,
         width: usize,
         height: usize,
         letters: String,
@@ -38,6 +40,7 @@ impl Puzzle {
         }
 
         Ok(Puzzle {
+            name,
             width,
             height,
             letters,
@@ -72,6 +75,7 @@ mod tests {
 
     fn from_board(board: &Board, word_list: &Trie) -> Puzzle {
         Puzzle {
+            name: String::from(""),
             width: board.width,
             height: board.height,
             letters: board
