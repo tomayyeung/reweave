@@ -29,5 +29,5 @@ Player is given a list of words and must reconstruct a board of letters that all
 - [ ] dictionary
   - [ ] words can be hovered (clicked?) to view dictionary definition
   - [ ] use external dictionary api (or have a dictionary db?)
-- [ ] db changes
-  - [ ] for each puzzle, have a separate "name" column that stores a readable name, and generate a unique "id" - this allows puzzles of same name
+- [x] db changes
+  - [x] for each puzzle, have a separate "name" column that stores a readable name, and generate a unique "id" - this allows puzzles of same name

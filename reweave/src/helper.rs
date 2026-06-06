@@ -63,7 +63,12 @@ pub struct CreateInput {
     words: HashSet<String>,
 }
 
-pub async fn create(inp: CreateInput) -> Result<(), ErrorResponse> {
+#[derive(Serialize)]
+pub struct CreateOutput {
+    id: i32,
+}
+
+pub async fn create(inp: CreateInput) -> Result<CreateOutput, ErrorResponse> {
     let puzzle = match puzzle::Puzzle::create(inp.name, inp.width, inp.height, inp.letters, inp.words) {
         Ok(puzzle) => puzzle,
         Err(error) => {
@@ -71,11 +76,11 @@ pub async fn create(inp: CreateInput) -> Result<(), ErrorResponse> {
         }
     };
 
-    insert_puzzle_into_db(puzzle)
+    let id = insert_puzzle_into_db(puzzle)
         .await
         .map_err(|e| ErrorResponse(e.to_string()))?;
 
-    Ok(())
+    Ok(CreateOutput { id })
 }
 
 #[derive(Deserialize)]

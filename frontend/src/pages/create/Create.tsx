@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 import { Board, BLANK } from "@/components/Board";
 import { CreateWordList } from "@components/WordList";
@@ -15,8 +16,13 @@ export default function CreatePage() {
 
   const [wordListDone, setWordListDone] = useState(false);
   const [boardLetters, setBoardLetters] = useState("_".repeat(w * h));
-  const [hardSet, setHardSet] = useState<boolean[]>(new Array(w * h).fill(true));
+  const [hardSet, setHardSet] = useState<boolean[]>(
+    new Array(w * h).fill(true),
+  );
   const [words, setWords] = useState<string[]>([]);
+
+  const [puzzleId, setPuzzleId] = useState<number | undefined>();
+  const [submitted, setSubmitted] = useState(false);
 
   // Update words on board letters change
   useEffect(() => {
@@ -33,7 +39,9 @@ export default function CreatePage() {
   }, [boardLetters]);
 
   async function submitPuzzle(formData: FormData) {
-    const res = await fetch(`${API_URL}/api/create`, {
+    if (submitted) return;
+
+    fetch(`${API_URL}/api/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -42,12 +50,19 @@ export default function CreatePage() {
         name: formData.get("puzzle-name"),
         width: w,
         height: h,
-        letters: hardSet.map((isSet, i) => isSet ? boardLetters[i] : BLANK).join(""),
+        letters: hardSet
+          .map((isSet, i) => (isSet ? boardLetters[i] : BLANK))
+          .join(""),
         words: words,
       }),
-    });
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setPuzzleId(data.id);
+      });
 
-    console.log(res);
+    setSubmitted(true);
   }
 
   return (
@@ -84,6 +99,13 @@ export default function CreatePage() {
         <input id="puzzle-name" name="puzzle-name" />
         <button type="submit">Submit puzzle</button>
       </form>
+
+      <Link
+        style={{ display: `${submitted ? "block" : "none"}` }}
+        to={{ pathname: `/play/${puzzleId}` }}
+      >
+        Play your puzzle!
+      </Link>
     </main>
   );
 }

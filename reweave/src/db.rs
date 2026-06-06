@@ -50,28 +50,28 @@ pub async fn get_puzzle(puzzle_id: &str) -> Option<Puzzle> {
     }
 }
 
-pub async fn insert_puzzle_into_db(puzzle: Puzzle) -> Result<(), Box<dyn Error>> {
+pub async fn insert_puzzle_into_db(puzzle: Puzzle) -> Result<i32, Box<dyn Error>> {
     if std::env::var("USE_LOCAL_FILES").is_ok() {
         let json_data = serde_json::to_string(&puzzle)?;
         let mut file = File::create(format!("../puzzles/{}", puzzle.name)).await?;
         file.write_all(json_data.as_bytes()).await?;
         file.flush().await?;
 
-        Ok(())
+        Ok(0) // unused, as we are working locally
     } else {
         let words: Vec<String> = puzzle.words.iter().cloned().collect();
 
-        sqlx::query(
-            "INSERT INTO puzzles (name, letters, width, height, words) VALUES ($1, $2, $3, $4, $5)",
+        let id: i32 = sqlx::query_scalar(
+            "INSERT INTO puzzles (name, letters, width, height, words) VALUES ($1, $2, $3, $4, $5) RETURNING id",
         )
         .bind(puzzle.name)
         .bind(puzzle.letters)
         .bind(puzzle.width as i32)
         .bind(puzzle.height as i32)
         .bind(&words as &[String])
-        .execute(get_puzzles_pool())
+        .fetch_one(get_puzzles_pool())
         .await?;
 
-        Ok(())
+        Ok(id)
     }
 }
