@@ -21,11 +21,13 @@ Player is given a list of words and must reconstruct a board of letters that all
   - [ ] only registered users can create
   - [ ] keeps track of completed puzzles
   - [ ] creating a puzzle records the user who made it
+- [ ] auth to backend - not everyone should be able to access backend, especially /api/create
 - [ ] ui/ux
   - [ ] make create buttons look not shit
   - [ ] popup on puzzle completion
   - [ ] home/puzzles page
   - [ ] search for puzzles
+  - [ ] while creating, when done creating word list, clearing letters (making them not hard set) should update wordlist accordingly, as if you're playing
 - [ ] dictionary
   - [ ] words can be hovered (clicked?) to view dictionary definition
   - [ ] use external dictionary api (or have a dictionary db?)
