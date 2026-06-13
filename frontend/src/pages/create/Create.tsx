@@ -151,6 +151,7 @@ export default function CreatePage() {
             loadPuzzleForCreate(width, height, words.all!);
             setWordsForPlay();
           } else {
+            setHardSet(new Array(width * height).fill(true));
             setWords({ all: find(width, height, boardLetters) });
           }
           setWordListDone(!wordListDone);
