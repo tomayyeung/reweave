@@ -1,25 +1,44 @@
+import { useState } from "react";
+
 import styles from "./Popup.module.css";
 
 type PopupProps = {
   text: string;
-  onClose: () => void;
   /** used for non-confirmation */
   closeText?: string;
   confirmText?: string;
   /** used for confirmation */
   cancelText?: string;
   onConfirm?: () => void;
+  onCancel?: () => void;
 };
 
 export function Popup({
   text,
-  onClose,
   closeText = "Close",
   confirmText = "Confirm",
   cancelText = "Cancel",
   onConfirm,
+  onCancel,
 }: PopupProps) {
+  const [isOpen, setIsOpen] = useState(true);
   const isConfirmation = onConfirm !== undefined;
+
+  if (!isOpen) return null;
+
+  function close() {
+    setIsOpen(false);
+  }
+
+  function confirm() {
+    onConfirm?.();
+    close();
+  }
+
+  function cancel() {
+    close();
+    onCancel?.();
+  }
 
   return (
     <div className={styles.overlay} role="presentation">
@@ -29,15 +48,15 @@ export function Popup({
         <div className={styles.actions}>
           {isConfirmation ? (
             <>
-              <button type="button" onClick={onConfirm}>
+              <button type="button" onClick={confirm}>
                 {confirmText}
               </button>
-              <button type="button" onClick={onClose}>
+              <button type="button" onClick={cancel}>
                 {cancelText}
               </button>
             </>
           ) : (
-            <button type="button" onClick={onClose}>
+            <button type="button" onClick={close}>
               {closeText}
             </button>
           )}

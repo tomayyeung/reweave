@@ -212,7 +212,7 @@ export default function CreatePage() {
             applySize(pendingSize.width, pendingSize.height);
             setPendingSize(undefined);
           }}
-          onClose={() => setPendingSize(undefined)}
+          onCancel={() => setPendingSize(undefined)}
         />
       ) : (
         <></>

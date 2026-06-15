@@ -8,6 +8,7 @@ import { useParams } from "react-router-dom";
 import { API_URL } from "@/config";
 
 import { check, load_puzzle as loadPuzzle } from "@wasm/frontend";
+import { Popup } from "@/components/Popup";
 
 export default function PlayPage() {
   const { puzzleId } = useParams();
@@ -111,6 +112,12 @@ export default function PlayPage() {
         </div>
         <WordList listType="Play" words={words} />
       </Wrapper>
+
+      {complete ? (
+        <Popup text="Congratulations! Puzzle completed." />
+      ) : (
+        <></>
+      )}
     </main>
   );
 }
