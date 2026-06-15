@@ -126,7 +126,7 @@ export function Board({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selectedTile, filteringLetters, boardLetters, hardSet]);
+  }, [selectedTile, boardType, filteringLetters, boardLetters, hardSet, setBoardLetters, setHardSet]);
 
   return (
     <div

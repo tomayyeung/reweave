@@ -48,14 +48,6 @@ export type Words = {
   all?: string[];
 };
 
-export function wordsAsStringArr(words: Words) {
-  return [...words.found ?? [], ...words.missing ?? [], ...words.extra ?? [], ...words.all ?? []];
-}
-
-export function allWordsFound(words: Words) {
-  return words.missing!.length === 0 && words.extra!.length === 0;
-}
-
 function PlayWordList({ words }: { words: Words }) {
   const sortedFoundWords = groupAndSort(words.found!);
   const sortedMissingWords = groupAndSort(words.missing!);
