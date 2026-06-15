@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Board, BLANK } from "@/components/Board";
 import { WordList, wordsAsStringArr } from "@components/WordList";
 import type { Words } from "@components/WordList";
+import { Popup } from "@components/Popup";
 import { Wrapper } from "@components/Wrapper";
 
 import styles from "./Create.module.css";
@@ -30,6 +31,9 @@ export default function CreatePage() {
 
   const [puzzleId, setPuzzleId] = useState<string | undefined>();
   const [submitted, setSubmitted] = useState(false);
+  const [pendingSize, setPendingSize] = useState<
+    { width: number; height: number } | undefined
+  >();
 
   /**
    * Once letters are done being entered, user can change what is hard set. Get starting letters from board letters
@@ -60,18 +64,24 @@ export default function CreatePage() {
     }
   }, [boardLetters, hardSet]);
 
-  function updateSize(formData: FormData) {
-    if (wordListDone) return;
-
-    // todo: add conformation popup, as board letters are cleared
-    const width = Number(formData.get("width"));
-    const height = Number(formData.get("height"));
-
+  function applySize(width: number, height: number) {
     setWidth(width);
     setHeight(height);
 
     setBoardLetters("_".repeat(width * height));
     setHardSet(new Array(width * height).fill(true));
+  }
+
+  function updateSize(formData: FormData) {
+    if (wordListDone) return;
+
+    const nextWidth = Number(formData.get("width"));
+    const nextHeight = Number(formData.get("height"));
+
+    // no changes were made
+    if (nextWidth === width && nextHeight === height) return;
+
+    setPendingSize({ width: nextWidth, height: nextHeight });
   }
 
   async function submitPuzzle(formData: FormData) {
@@ -105,6 +115,7 @@ export default function CreatePage() {
     <main>
       <Wrapper>
         <div>
+          {/* User input to update board size */}
           <form action={updateSize}>
             <label htmlFor="width">Width:</label>
             <input
@@ -127,6 +138,7 @@ export default function CreatePage() {
             <button type="submit">Update board size</button>
           </form>
 
+          {/* Board for creating */}
           <Board
             boardType="Create"
             filteringLetters={wordListDone}
@@ -139,12 +151,14 @@ export default function CreatePage() {
           />
         </div>
 
+        {/* Wordlist for creating */}
         <WordList
           listType={`${wordListDone ? "Play" : "Create"}`}
           words={words}
         />
       </Wrapper>
 
+      {/* User input to lock in letters, confirming the puzzle's word list */}
       <button
         onClick={() => {
           if (!wordListDone) {
@@ -160,6 +174,7 @@ export default function CreatePage() {
         {wordListDone ? "Keep editing word list" : "Done with word list"}
       </button>
 
+      {/* Puzzle submission */}
       <form
         style={{ display: wordListDone ? "block" : "none" }}
         className={styles.form}
@@ -171,6 +186,7 @@ export default function CreatePage() {
         <button type="submit">Submit puzzle</button>
       </form>
 
+      {/* Post-submission info */}
       {submitted ? (
         puzzleId === undefined ? (
           <p>Creating puzzle...</p>
@@ -182,6 +198,22 @@ export default function CreatePage() {
             Play your puzzle!
           </Link>
         )
+      ) : (
+        <></>
+      )}
+
+      {/* Confirmation for updating board size */}
+      {pendingSize !== undefined ? (
+        <Popup
+          text="Changing puzzle size will clear your current work. Proceed anyway?"
+          confirmText="Proceed"
+          cancelText="Cancel"
+          onConfirm={() => {
+            applySize(pendingSize.width, pendingSize.height);
+            setPendingSize(undefined);
+          }}
+          onClose={() => setPendingSize(undefined)}
+        />
       ) : (
         <></>
       )}
