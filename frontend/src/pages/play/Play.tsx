@@ -9,6 +9,7 @@ import { API_URL } from "@/config";
 
 import { check, load_puzzle as loadPuzzle } from "@wasm/frontend";
 import { Popup } from "@/components/Popup";
+import styles from "./Play.module.css";
 
 export default function PlayPage() {
   const { puzzleId } = useParams();
@@ -88,10 +89,12 @@ export default function PlayPage() {
   return (
     <main>
       <Wrapper>
-        <div>
-          <h3>Puzzle: {puzzleName}</h3>
-          <h4 style={{ display: complete ? "block" : "none" }}>Completed!</h4>
-          {getMain(puzzleFetched)}
+        <div className={styles.boardPanel}>
+          <div className={styles.header}>
+            <h3>Puzzle: {puzzleName}</h3>
+            <h4 hidden={!complete}>Completed!</h4>
+          </div>
+          <div className={styles.boardSlot}>{getMain(puzzleFetched)}</div>
         </div>
         <WordList listType="Play" words={words} />
       </Wrapper>

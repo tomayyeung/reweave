@@ -30,7 +30,10 @@ Player is given a list of words and must reconstruct a board of letters that all
   - [x] create puzzles w/ different size
   - [x] after submitted created puzzle, "Play your puzzle" link shouldn't appear until there is a response from backend containing puzzle id
   - [ ] homepage, existing puzzles/search page
-  - [ ] make everything look not shit
+  - [x] make everything look not shit
+  - [ ] clear board button
+- [ ] puzzle stores answer
+  - [ ] give up button
 - [ ] dictionary
   - [ ] words can be hovered (clicked?) to view dictionary definition
   - [ ] use external dictionary api (or have a dictionary db?)

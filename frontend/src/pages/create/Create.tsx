@@ -89,28 +89,32 @@ export default function CreatePage() {
   return (
     <main>
       <Wrapper>
-        <div>
+        <div className={styles.boardPanel}>
           {/* User input to update board size */}
-          <form action={updateSize}>
-            <label htmlFor="width">Width:</label>
-            <input
-              type="number"
-              name="width"
-              id="width"
-              defaultValue={width}
-              min={2}
-              max={12}
-            />
-            <label htmlFor="height">Height:</label>
-            <input
-              type="number"
-              name="height"
-              id="height"
-              defaultValue={height}
-              min={2}
-              max={12}
-            />
-            <button type="submit">Update board size</button>
+          <form className={styles.sizeForm} action={updateSize}>
+            <div className={styles.formField}>
+              <label htmlFor="width">Width</label>
+              <input
+                type="number"
+                name="width"
+                id="width"
+                defaultValue={width}
+                min={2}
+                max={12}
+              />
+            </div>
+            <div className={styles.formField}>
+              <label htmlFor="height">Height</label>
+              <input
+                type="number"
+                name="height"
+                id="height"
+                defaultValue={height}
+                min={2}
+                max={12}
+              />
+            </div>
+            <button type="submit">Update size</button>
           </form>
 
           {/* Board for creating */}
@@ -134,38 +138,44 @@ export default function CreatePage() {
       </Wrapper>
 
       {/* User input to lock in letters, confirming the puzzle's word list */}
-      <button
-        onClick={() => {
-          if (!wordListDone) {
-            loadPuzzleForCreate(width, height, words.all!);
-          } else {
-            setHardSet(new Array(width * height).fill(true));
-          }
-          setWordListDone(!wordListDone);
-        }}
-      >
-        {wordListDone ? "Keep editing word list" : "Done with word list"}
-      </button>
+      <div className={styles.actions}>
+        <button
+          type="button"
+          className={styles.secondaryButton}
+          onClick={() => {
+            if (!wordListDone) {
+              loadPuzzleForCreate(width, height, words.all!);
+            } else {
+              setHardSet(new Array(width * height).fill(true));
+            }
+            setWordListDone(!wordListDone);
+          }}
+        >
+          {wordListDone ? "Keep editing word list" : "Done with word list"}
+        </button>
 
-      {/* Puzzle submission */}
-      <form
-        style={{ display: wordListDone ? "block" : "none" }}
-        className={styles.form}
-        action={submitPuzzle}
-        autoComplete="off"
-      >
-        <label htmlFor="puzzle-name">Puzzle name</label>
-        <input id="puzzle-name" name="puzzle-name" />
-        <button type="submit">Submit puzzle</button>
-      </form>
+        {/* Puzzle submission */}
+        <form
+          style={{ display: wordListDone ? "flex" : "none" }}
+          className={styles.form}
+          action={submitPuzzle}
+          autoComplete="off"
+        >
+          <div className={styles.formField}>
+            <label htmlFor="puzzle-name">Puzzle name</label>
+            <input id="puzzle-name" name="puzzle-name" />
+          </div>
+          <button type="submit">Submit puzzle</button>
+        </form>
+      </div>
 
       {/* Post-submission info */}
       {submitted ? (
         puzzleId === undefined ? (
-          <p>Creating puzzle...</p>
+          <p className={styles.status}>Creating puzzle...</p>
         ) : (
           <Link
-            style={{ display: `${submitted ? "block" : "none"}` }}
+            className={styles.playLink}
             to={{ pathname: `/play/${puzzleId}` }}
           >
             Play your puzzle!

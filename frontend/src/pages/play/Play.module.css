@@ -1,0 +1,23 @@
+.boardPanel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+.header h3,
+.header h4 {
+  margin-bottom: 0;
+}
+
+.header h4 {
+  margin-top: 0.25rem;
+}
+
+.boardSlot {
+  height: 100%;
+  min-height: 0;
+}

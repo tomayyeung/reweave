@@ -72,12 +72,6 @@ export function Board({
 }: BoardProps) {
   const [selectedTile, setSelectedTile] = useState(-1);
 
-  const boardDimension = Math.max(width, height);
-  const boardStyle = {
-    gridTemplateColumns: `repeat(${width}, 1fr)`,
-    "--board-dimension": boardDimension,
-  } as CSSProperties & Record<"--board-dimension", number>;
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const idx = selectedTile;
@@ -128,26 +122,41 @@ export function Board({
     };
   }, [selectedTile, boardType, filteringLetters, boardLetters, hardSet, setBoardLetters, setHardSet]);
 
+  if (width <= 0 || height <= 0 || boardLetters.length === 0) {
+    return null;
+  }
+
+  const boardDimension = Math.max(width, height);
+  const boardStyle = {
+    gridTemplateColumns: `repeat(${width}, 1fr)`,
+    "--board-width": width,
+    "--board-height": height,
+    "--board-dimension": boardDimension,
+  } as CSSProperties &
+    Record<"--board-width" | "--board-height" | "--board-dimension", number>;
+
   return (
-    <div
-      className={styles.board}
-      style={boardStyle}
-    >
-      {[...boardLetters].map((letter, i) => (
-        <Tile
-          boardType={boardType}
-          key={i}
-          letter={letter.toUpperCase()}
-          idx={i}
-          isHardSet={hardSet[i]}
-          isHole={letter === HOLE}
-          updateSelectedTile={(idx: number) => {
-            if (!(boardType === "Play" && letter === HOLE))
-              setSelectedTile(selectedTile === idx ? -1 : idx);
-          }}
-          isSelected={selectedTile === i}
-        />
-      ))}
+    <div className={styles.boardFrame}>
+      <div
+        className={styles.board}
+        style={boardStyle}
+      >
+        {[...boardLetters].map((letter, i) => (
+          <Tile
+            boardType={boardType}
+            key={i}
+            letter={letter.toUpperCase()}
+            idx={i}
+            isHardSet={hardSet[i]}
+            isHole={letter === HOLE}
+            updateSelectedTile={(idx: number) => {
+              if (!(boardType === "Play" && letter === HOLE))
+                setSelectedTile(selectedTile === idx ? -1 : idx);
+            }}
+            isSelected={selectedTile === i}
+          />
+        ))}
+      </div>
     </div>
   );
 }
