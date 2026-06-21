@@ -77,11 +77,12 @@ pub fn load_puzzle_for_create(width: u32, height: u32, words: Vec<String>) -> Re
 
     *guard = Some(
         puzzle::Puzzle::create(
-            String::new(),
+            String::new(), // no name needed
             width as usize,
             height as usize,
-            " ".repeat((width * height) as usize),
+            " ".repeat((width * height) as usize), // no starting letters needed
             words.into_iter().collect(),
+            String::new(), // no stored answer neede
         ).map_err(JsValue::from)?,
     );
 

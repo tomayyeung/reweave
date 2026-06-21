@@ -23,6 +23,8 @@ pub struct Puzzle {
     /// holes, blanks are stored in letters as !, _
     pub letters: String,
     pub words: HashSet<String>,
+    /// same as letters, but with letters for solution filled into blanks
+    pub answer: String,
 }
 
 impl Puzzle {
@@ -34,6 +36,7 @@ impl Puzzle {
         height: usize,
         letters: String,
         words: HashSet<String>,
+        answer: String,
     ) -> Result<Self, String> {
         if width * height != letters.len() {
             return Err("Width and height do not match length of chars".to_string());
@@ -45,6 +48,7 @@ impl Puzzle {
             height,
             letters,
             words,
+            answer,
         })
     }
 
@@ -74,17 +78,20 @@ mod tests {
     use crate::common::words::*;
 
     fn from_board(board: &Board, word_list: &Trie) -> Puzzle {
+        let answer: String = board
+            .cells
+            .iter()
+            .flat_map(|row| row.iter())
+            .map(|cell| cell.unwrap_or('_'))
+            .collect();
+
         Puzzle {
             name: String::from(""),
             width: board.width,
             height: board.height,
-            letters: board
-                .cells
-                .iter()
-                .flat_map(|row| row.iter())
-                .map(|cell| cell.unwrap_or('_'))
-                .collect(),
+            letters: answer.clone(),
             words: find_words(board, word_list).into_iter().collect(),
+            answer,
         }
     }
 

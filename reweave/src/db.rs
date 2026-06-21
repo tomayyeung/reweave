@@ -16,6 +16,7 @@ struct PuzzleRow {
     pub height: i32,
     pub letters: String,
     pub words: Vec<String>,
+    pub answer: String,
 }
 
 impl From<PuzzleRow> for Puzzle {
@@ -26,6 +27,7 @@ impl From<PuzzleRow> for Puzzle {
             height: row.height as usize,
             letters: row.letters,
             words: row.words.into_iter().collect(),
+            answer: row.answer,
         }
     }
 }
@@ -39,7 +41,7 @@ pub async fn get_puzzle(puzzle_id: &str) -> Option<Puzzle> {
     if std::env::var("USE_LOCAL_FILES").is_ok() {
         Puzzle::from_file(format!("../puzzles/{}.json", puzzle_id).as_str()).ok()
     } else {
-        let Ok(puzzle_row) = sqlx::query_as::<_, PuzzleRow>("SELECT width, height, letters, words, name FROM puzzles WHERE id = $1")
+        let Ok(puzzle_row) = sqlx::query_as::<_, PuzzleRow>("SELECT name, width, height, letters, words, answer FROM puzzles WHERE id = $1")
             .bind(Uuid::parse_str(puzzle_id).ok()?)
             .fetch_one(get_puzzles_pool())
             .await
@@ -63,13 +65,14 @@ pub async fn insert_puzzle_into_db(puzzle: Puzzle) -> Result<String, Box<dyn Err
         let words: Vec<String> = puzzle.words.iter().cloned().collect();
 
         let uuid: Uuid = sqlx::query_scalar(
-            "INSERT INTO puzzles (name, letters, width, height, words) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+            "INSERT INTO puzzles (name, width, height, letters, words, answer) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
         )
         .bind(puzzle.name)
-        .bind(puzzle.letters)
         .bind(puzzle.width as i32)
         .bind(puzzle.height as i32)
+        .bind(puzzle.letters)
         .bind(&words as &[String])
+        .bind(puzzle.answer)
         .fetch_one(get_puzzles_pool())
         .await?;
 

@@ -25,6 +25,8 @@ export default function PlayPage() {
   const [w, setWidth] = useState(0);
   const [h, setHeight] = useState(0);
 
+  const [_answer, setAnswer] = useState("");
+
   const words: Words = puzzleFetched
     ? check(boardLetters)
     : { found: [], missing: [], extra: [] };
@@ -54,6 +56,9 @@ export default function PlayPage() {
           // any initial letters means they are hard set
           setBoardLetters(initialLetters);
           setHardSet([...initialLetters].map((letter) => letter !== BLANK));
+
+          // initialize answer
+          setAnswer(puzzle.answer);
 
           setPuzzleFetched(true);
         } catch {

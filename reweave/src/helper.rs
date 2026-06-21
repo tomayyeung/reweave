@@ -61,6 +61,7 @@ pub struct CreateInput {
     height: usize,
     letters: String,
     words: HashSet<String>,
+    answer: String,
 }
 
 #[derive(Serialize)]
@@ -69,7 +70,7 @@ pub struct CreateOutput {
 }
 
 pub async fn create(inp: CreateInput) -> Result<CreateOutput, ErrorResponse> {
-    let puzzle = match puzzle::Puzzle::create(inp.name, inp.width, inp.height, inp.letters, inp.words) {
+    let puzzle = match puzzle::Puzzle::create(inp.name, inp.width, inp.height, inp.letters, inp.words, inp.answer) {
         Ok(puzzle) => puzzle,
         Err(error) => {
             return Err(ErrorResponse(error));

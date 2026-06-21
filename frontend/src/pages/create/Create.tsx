@@ -75,6 +75,7 @@ export default function CreatePage() {
           .map((isSet, i) => (isSet ? boardLetters[i] : BLANK))
           .join(""),
         words: wordsAsStringArr(words),
+        answer: boardLetters,
       }),
     })
       .then((res) => res.json())
