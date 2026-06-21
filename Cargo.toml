@@ -1,7 +1,7 @@
 [workspace]
 resolver = "3"
 members = ["reweave", "frontend"]
-exclude = ["wordlist"]
+exclude = ["wordlist", "solver"]
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
