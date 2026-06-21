@@ -17,6 +17,22 @@
   margin-top: 0.25rem;
 }
 
+.giveUpButton {
+  margin-top: 0.5rem;
+  border-color: var(--give-up);
+  background: var(--surface);
+  color: var(--give-up);
+}
+
+.giveUpButton:hover {
+  background: var(--give-up);
+  color: #ffffff;
+}
+
+.revealedStatus {
+  color: var(--give-up);
+}
+
 .boardSlot {
   height: 100%;
   min-height: 0;

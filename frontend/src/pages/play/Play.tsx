@@ -25,7 +25,9 @@ export default function PlayPage() {
   const [w, setWidth] = useState(0);
   const [h, setHeight] = useState(0);
 
-  const [_answer, setAnswer] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [isGivingUp, setIsGivingUp] = useState(false);
+  const [gaveUp, setGaveUp] = useState(false);
 
   const words: Words = puzzleFetched
     ? check(boardLetters)
@@ -97,15 +99,42 @@ export default function PlayPage() {
         <div className={styles.boardPanel}>
           <div className={styles.header}>
             <h3>Puzzle: {puzzleName}</h3>
-            <h4 hidden={!complete}>Completed!</h4>
+            <button
+              type="button"
+              className={styles.giveUpButton}
+              hidden={!puzzleFetched || complete}
+              onClick={() => setIsGivingUp(true)}
+            >
+              Reveal solution
+            </button>
+            <h4 hidden={!complete || gaveUp}>Completed!</h4>
+            <h4 className={styles.revealedStatus} hidden={!gaveUp}>
+              Solution revealed.
+            </h4>
           </div>
           <div className={styles.boardSlot}>{getMain(puzzleFetched)}</div>
         </div>
         <WordList listType="Play" words={words} />
       </Wrapper>
 
-      {complete ? (
+      {complete && !gaveUp ? (
         <Popup text="Congratulations! Puzzle completed." />
+      ) : (
+        <></>
+      )}
+
+      {isGivingUp ? (
+        <Popup
+          text="Give up and reveal the answer?"
+          confirmText="Reveal answer"
+          cancelText="Cancel"
+          onConfirm={() => {
+            setBoardLetters(answer);
+            setGaveUp(true);
+            setIsGivingUp(false);
+          }}
+          onCancel={() => setIsGivingUp(false)}
+        />
       ) : (
         <></>
       )}
