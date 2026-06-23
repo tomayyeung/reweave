@@ -21,7 +21,7 @@ pub async fn handler(req: Request) -> Result<Response<ResponseBody>, Error> {
                     .to_string();
                 LoadInput { puzzle_id }
             };
-            return json_response(load_puzzle(params).await);
+            json_response(load_puzzle(params).await)
         }
         _ => json_err_response("Invalid method request"),
     }

@@ -1,9 +1,9 @@
 use sqlx::PgPool;
-use uuid::Uuid;
 use std::error::Error;
 use std::sync::OnceLock;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
+use uuid::Uuid;
 
 use crate::common::puzzle::Puzzle;
 
@@ -41,10 +41,12 @@ pub async fn get_puzzle(puzzle_id: &str) -> Option<Puzzle> {
     if std::env::var("USE_LOCAL_FILES").is_ok() {
         Puzzle::from_file(format!("../puzzles/{}.json", puzzle_id).as_str()).ok()
     } else {
-        let Ok(puzzle_row) = sqlx::query_as::<_, PuzzleRow>("SELECT name, width, height, letters, words, answer FROM puzzles WHERE id = $1")
-            .bind(Uuid::parse_str(puzzle_id).ok()?)
-            .fetch_one(get_puzzles_pool())
-            .await
+        let Ok(puzzle_row) = sqlx::query_as::<_, PuzzleRow>(
+            "SELECT name, width, height, letters, words, answer FROM puzzles WHERE id = $1",
+        )
+        .bind(Uuid::parse_str(puzzle_id).ok()?)
+        .fetch_one(get_puzzles_pool())
+        .await
         else {
             return None;
         };

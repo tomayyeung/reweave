@@ -71,7 +71,11 @@ pub fn check(letters: String) -> Result<JsValue, JsValue> {
 
 /// When creating and wordlist is complete, create a temporary puzzle so that clearing letters updates words
 #[wasm_bindgen]
-pub fn load_puzzle_for_create(width: u32, height: u32, words: Vec<String>) -> Result<JsValue, JsValue> {
+pub fn load_puzzle_for_create(
+    width: u32,
+    height: u32,
+    words: Vec<String>,
+) -> Result<JsValue, JsValue> {
     let lock = get_lock();
     let mut guard = lock.write().unwrap();
 
@@ -83,7 +87,8 @@ pub fn load_puzzle_for_create(width: u32, height: u32, words: Vec<String>) -> Re
             " ".repeat((width * height) as usize), // no starting letters needed
             words.into_iter().collect(),
             String::new(), // no stored answer neede
-        ).map_err(JsValue::from)?,
+        )
+        .map_err(JsValue::from)?,
     );
 
     Ok(JsValue::from("successful load"))

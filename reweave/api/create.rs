@@ -9,7 +9,7 @@ pub async fn handler(req: Request) -> Result<Response<ResponseBody>, Error> {
         "OPTIONS" => cors_response(204, ""),
         "POST" => {
             let params: CreateInput = read_json_body(req).await?;
-            return json_response(create(params).await);
+            json_response(create(params).await)
         }
         _ => json_err_response("Invalid method request"),
     }

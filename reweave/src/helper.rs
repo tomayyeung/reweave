@@ -70,7 +70,14 @@ pub struct CreateOutput {
 }
 
 pub async fn create(inp: CreateInput) -> Result<CreateOutput, ErrorResponse> {
-    let puzzle = match puzzle::Puzzle::create(inp.name, inp.width, inp.height, inp.letters, inp.words, inp.answer) {
+    let puzzle = match puzzle::Puzzle::create(
+        inp.name,
+        inp.width,
+        inp.height,
+        inp.letters,
+        inp.words,
+        inp.answer,
+    ) {
         Ok(puzzle) => puzzle,
         Err(error) => {
             return Err(ErrorResponse(error));
@@ -92,6 +99,9 @@ pub struct LoadInput {
 pub async fn load_puzzle(inp: LoadInput) -> Result<puzzle::Puzzle, ErrorResponse> {
     match get_puzzle(&inp.puzzle_id).await {
         Some(puzzle) => Ok(puzzle.clone()),
-        None => Err(ErrorResponse(format!("invalid puzzle id: {}", &inp.puzzle_id))),
+        None => Err(ErrorResponse(format!(
+            "invalid puzzle id: {}",
+            &inp.puzzle_id
+        ))),
     }
 }
