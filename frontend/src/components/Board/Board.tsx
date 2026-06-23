@@ -30,6 +30,8 @@ type BoardProps = {
    */
   setHardSet?: React.Dispatch<React.SetStateAction<boolean[]>>;
   setBoardLetters: React.Dispatch<React.SetStateAction<string>>;
+  selectedTile?: number;
+  setSelectedTile?: React.Dispatch<React.SetStateAction<number>>;
 };
 
 function Tile({
@@ -69,8 +71,12 @@ export function Board({
   hardSet,
   setBoardLetters,
   setHardSet,
+  selectedTile: controlledSelectedTile,
+  setSelectedTile: controlledSetSelectedTile,
 }: BoardProps) {
-  const [selectedTile, setSelectedTile] = useState(-1);
+  const [internalSelectedTile, setInternalSelectedTile] = useState(-1);
+  const selectedTile = controlledSelectedTile ?? internalSelectedTile;
+  const setSelectedTile = controlledSetSelectedTile ?? setInternalSelectedTile;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

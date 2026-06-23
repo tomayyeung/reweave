@@ -17,16 +17,27 @@
   margin-top: 0.25rem;
 }
 
-.giveUpButton {
+.revealActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-top: 0.5rem;
+}
+
+.revealButton {
   border-color: var(--give-up);
   background: var(--surface);
   color: var(--give-up);
 }
 
-.giveUpButton:hover {
+.revealButton:hover:not(:disabled) {
   background: var(--give-up);
   color: #ffffff;
+}
+
+.revealButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .revealedStatus {

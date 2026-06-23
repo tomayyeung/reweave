@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { Board, BLANK } from "@/components/Board";
+import { Board, BLANK, HOLE } from "@/components/Board";
 import { WordList, allWordsFound } from "@components/WordList";
 import type { Words } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
@@ -10,6 +10,8 @@ import { API_URL } from "@/config";
 import { check, load_puzzle as loadPuzzle } from "@wasm/frontend";
 import { Popup } from "@/components/Popup";
 import styles from "./Play.module.css";
+
+type PendingReveal = "solution" | "random" | "selected";
 
 export default function PlayPage() {
   const { puzzleId } = useParams();
@@ -26,13 +28,16 @@ export default function PlayPage() {
   const [h, setHeight] = useState(0);
 
   const [answer, setAnswer] = useState("");
-  const [isGivingUp, setIsGivingUp] = useState(false);
+  const [pendingReveal, setPendingReveal] = useState<PendingReveal | undefined>();
   const [gaveUp, setGaveUp] = useState(false);
+  const [usedHint, setUsedHint] = useState(false);
+  const [selectedTile, setSelectedTile] = useState(-1);
 
   const words: Words = puzzleFetched
     ? check(boardLetters)
     : { found: [], missing: [], extra: [] };
   const complete = puzzleFetched && allWordsFound(words);
+  const showRevealActions = puzzleFetched === true && !complete && !gaveUp;
 
   useEffect(() => {
     const route = `${API_URL}/api/puzzle/${puzzleId}`;
@@ -61,6 +66,9 @@ export default function PlayPage() {
 
           // initialize answer
           setAnswer(puzzle.answer);
+          setSelectedTile(-1);
+          setUsedHint(false);
+          setGaveUp(false);
 
           setPuzzleFetched(true);
         } catch {
@@ -71,6 +79,73 @@ export default function PlayPage() {
         }
       });
   }, [puzzleId]);
+
+  function revealTile(idx: number) {
+    const answerTile = answer[idx];
+
+    if (idx < 0 || idx >= answer.length || answerTile === undefined) {
+      return;
+    }
+
+    const revealedTile = answerTile === BLANK ? HOLE : answerTile;
+    setBoardLetters([...boardLetters].with(idx, revealedTile).join(""));
+    setHardSet(hardSet.with(idx, true));
+    setUsedHint(true);
+  }
+
+  function revealRandomTile() {
+    const eligibleTiles = [...answer]
+      .map((letter, idx) => ({ letter, idx }))
+      .filter(
+        ({ letter, idx }) => letter !== BLANK && letter !== HOLE && !hardSet[idx],
+      );
+
+    if (eligibleTiles.length === 0) {
+      return;
+    }
+
+    const { idx } = eligibleTiles[Math.floor(Math.random() * eligibleTiles.length)];
+    revealTile(idx);
+  }
+
+  function getRevealPopupText(reveal: PendingReveal) {
+    switch (reveal) {
+      case "solution":
+        return "Reveal the full solution?";
+      case "random":
+        return "Reveal a random tile?";
+      case "selected":
+        return "Reveal the selected tile?";
+    }
+  }
+
+  function getRevealConfirmText(reveal: PendingReveal) {
+    switch (reveal) {
+      case "solution":
+        return "Reveal solution";
+      case "random":
+        return "Reveal random tile";
+      case "selected":
+        return "Reveal selected tile";
+    }
+  }
+
+  function confirmReveal() {
+    switch (pendingReveal) {
+      case "solution":
+        setBoardLetters(answer);
+        setGaveUp(true);
+        break;
+      case "random":
+        revealRandomTile();
+        break;
+      case "selected":
+        revealTile(selectedTile);
+        break;
+    }
+
+    setPendingReveal(undefined);
+  }
 
   function getMain(fetchedStatus: boolean | undefined) {
     switch (fetchedStatus) {
@@ -88,6 +163,8 @@ export default function PlayPage() {
             boardLetters={boardLetters}
             hardSet={hardSet}
             setBoardLetters={setBoardLetters}
+            selectedTile={selectedTile}
+            setSelectedTile={setSelectedTile}
           />
         );
     }
@@ -99,15 +176,36 @@ export default function PlayPage() {
         <div className={styles.boardPanel}>
           <div className={styles.header}>
             <h3>Puzzle: {puzzleName}</h3>
-            <button
-              type="button"
-              className={styles.giveUpButton}
-              hidden={!puzzleFetched || complete}
-              onClick={() => setIsGivingUp(true)}
-            >
-              Reveal solution
-            </button>
-            <h4 hidden={!complete || gaveUp}>Completed!</h4>
+            {showRevealActions ? (
+              <div className={styles.revealActions}>
+                <button
+                  type="button"
+                  className={styles.revealButton}
+                  onClick={() => setPendingReveal("solution")}
+                >
+                  Reveal solution
+                </button>
+                <button
+                  type="button"
+                  className={styles.revealButton}
+                  onClick={() => setPendingReveal("random")}
+                >
+                  Reveal random tile
+                </button>
+                <button
+                  type="button"
+                  className={styles.revealButton}
+                  disabled={selectedTile === -1}
+                  onClick={() => setPendingReveal("selected")}
+                >
+                  Reveal selected tile
+                </button>
+              </div>
+            ) : (
+              <></>
+            )}
+            <h4 hidden={!complete || gaveUp || usedHint}>Completed!</h4>
+            <h4 hidden={!complete || gaveUp || !usedHint}>Completed with hints!</h4>
             <h4 className={styles.revealedStatus} hidden={!gaveUp}>
               Solution revealed.
             </h4>
@@ -123,17 +221,13 @@ export default function PlayPage() {
         <></>
       )}
 
-      {isGivingUp ? (
+      {pendingReveal !== undefined && showRevealActions ? (
         <Popup
-          text="Give up and reveal the answer?"
-          confirmText="Reveal answer"
+          text={getRevealPopupText(pendingReveal)}
+          confirmText={getRevealConfirmText(pendingReveal)}
           cancelText="Cancel"
-          onConfirm={() => {
-            setBoardLetters(answer);
-            setGaveUp(true);
-            setIsGivingUp(false);
-          }}
-          onCancel={() => setIsGivingUp(false)}
+          onConfirm={confirmReveal}
+          onCancel={() => setPendingReveal(undefined)}
         />
       ) : (
         <></>
