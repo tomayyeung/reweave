@@ -34,9 +34,7 @@ Player is given a list of words and must reconstruct a board of letters that all
   - [x] clear board button
 - [x] puzzle stores answer
   - [x] give up button
-- [ ] dictionary
-  - [ ] words can be hovered (clicked?) to view dictionary definition
-  - [ ] use external dictionary api (or have a dictionary db?)
+- [x] dictionary: words can be clicked to view dictionary definition; use external dictionary api
 - [x] db changes
   - [x] for each puzzle, have a separate "name" column that stores a readable name, and generate a unique "id" - this allows puzzles of same name
 - [ ] modify puzzle
