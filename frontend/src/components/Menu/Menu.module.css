@@ -1,0 +1,65 @@
+.menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.trigger {
+  width: 2.8rem;
+  padding-inline: 0;
+  font-size: 1.35rem;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--text);
+  /* border-radius: 100%; */
+  border-color: var(--border);
+  /* border-width: 2px; */
+  background-color: var(--surface);
+}
+
+.trigger:hover {
+  transform: none;
+  background-color: var(--surface-strong);
+  border-color: var(--border-strong);
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 10;
+  display: grid;
+  width: max-content;
+  min-width: 11.5rem;
+  max-width: min(16rem, calc(100vw - 32px));
+  gap: 0.15rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.panel :where(button) {
+  width: 100%;
+  min-height: 2.35rem;
+  border-color: transparent;
+  padding: 0.55rem 0.7rem;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  transform: none;
+}
+
+.panel :where(button):hover:not(:disabled) {
+  background: var(--bg-soft);
+  transform: none;
+}
+
+.panel :where(button):active {
+  transform: none;
+}
+
+.panel :where(button):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

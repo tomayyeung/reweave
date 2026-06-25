@@ -17,27 +17,43 @@
   margin-top: 0.25rem;
 }
 
-.revealActions {
+.headerTop {
   display: flex;
-  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 0.5rem;
-  margin-top: 0.5rem;
 }
 
-.revealButton {
-  border-color: var(--give-up);
-  background: var(--surface);
+.headerTop h3 {
+  min-width: 0;
+}
+
+.dangerMenuItem {
+  color: var(--give-up);
+  opacity: 0.9;
+}
+
+.dangerMenuItem:hover:not(:disabled) {
+  background: rgb(215 60 55 / 10%);
   color: var(--give-up);
 }
 
-.revealButton:hover:not(:disabled) {
-  background: var(--give-up);
-  color: #ffffff;
+.hintMenuItem {
+  color: var(--warning);
 }
 
-.revealButton:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+.hintMenuItem:hover:not(:disabled) {
+  background: rgb(219 167 76 / 12%);
+  color: var(--warning);
+}
+
+.secondaryMenuItem {
+  color: var(--accent);
+}
+
+.secondaryMenuItem:hover:not(:disabled) {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .revealedStatus {

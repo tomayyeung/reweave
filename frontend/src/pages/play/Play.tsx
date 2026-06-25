@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { Board, BLANK, HOLE } from "@/components/Board";
+import { Menu } from "@/components/Menu";
 import { WordList, allWordsFound } from "@components/WordList";
 import type { Words } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
@@ -185,43 +186,42 @@ export default function PlayPage() {
       <Wrapper>
         <div className={styles.boardPanel}>
           <div className={styles.header}>
-            <h3>Puzzle: {puzzleName}</h3>
-            {showRevealActions ? (
-              <div className={styles.revealActions}>
-                <button
-                  type="button"
-                  className={styles.revealButton}
-                  onClick={() => setPendingAction("solution")}
-                >
-                  Reveal solution
-                </button>
-                <button
-                  type="button"
-                  className={styles.revealButton}
-                  onClick={() => setPendingAction("random")}
-                >
-                  Reveal random tile
-                </button>
-                <button
-                  type="button"
-                  className={styles.revealButton}
-                  disabled={selectedTile === -1}
-                  onClick={() => setPendingAction("selected")}
-                >
-                  Reveal selected tile
-                </button>
-                <button
-                  type="button"
-                  className={styles.secondaryButton}
-                  disabled={selectedTile === -1}
-                  onClick={() => setPendingAction("clear")}
-                >
-                  Clear board
-                </button>
-              </div>
-            ) : (
-              <></>
-            )}
+            <div className={styles.headerTop}>
+              <h3>Puzzle: {puzzleName}</h3>
+              {showRevealActions ? (
+                <Menu label="⋯" ariaLabel="Puzzle actions">
+                  <button
+                    type="button"
+                    className={styles.dangerMenuItem}
+                    onClick={() => setPendingAction("solution")}
+                  >
+                    Reveal solution
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.dangerMenuItem}
+                    onClick={() => setPendingAction("random")}
+                  >
+                    Reveal random tile
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.dangerMenuItem}
+                    disabled={selectedTile === -1}
+                    onClick={() => setPendingAction("selected")}
+                  >
+                    Reveal selected tile
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.secondaryMenuItem}
+                    onClick={() => setPendingAction("clear")}
+                  >
+                    Clear board
+                  </button>
+                </Menu>
+              ) : null}
+            </div>
             <h4 hidden={!complete || gaveUp || usedHint}>Completed!</h4>
             <h4 hidden={!complete || gaveUp || !usedHint}>Completed with hints!</h4>
             <h4 className={styles.revealedStatus} hidden={!gaveUp}>
