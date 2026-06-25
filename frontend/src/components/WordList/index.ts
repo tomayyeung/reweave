@@ -1,6 +1,6 @@
-import type { Words } from "./WordList";
+import type { Words } from "./types";
 
-export type { Words } from "./WordList";
+export type { Words } from "./types";
 export { WordList } from "./WordList";
 
 export function wordsAsStringArr(words: Words) {

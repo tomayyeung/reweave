@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import styles from "./WordList.module.css";
-import type { DictionaryCache } from "./WordList";
+import type { DictionaryCache } from "./types";
 
 type WordProps = {
   word: string;

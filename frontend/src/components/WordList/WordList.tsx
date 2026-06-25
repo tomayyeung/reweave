@@ -2,29 +2,14 @@ import { useState } from "react";
 
 import { Word } from "./Word";
 import styles from "./WordList.module.css";
+import type {
+  DefinitionMeaning,
+  DefinitionPronunciation,
+  DictionaryCache,
+  Words,
+} from "./types";
 
 const NO_DEFINITION_TITLE = "No Definitions Found";
-
-export type DefinitionState =
-  | { status: "loading" }
-  | {
-      status: "loaded";
-      meanings: DefinitionMeaning[];
-      pronunciation?: DefinitionPronunciation;
-      sourceUrls: string[];
-    }
-  | { status: "not-found" }
-  | { status: "error" };
-
-export type DefinitionMeaning = {
-  partOfSpeech: string;
-  definitions: string[];
-};
-
-export type DefinitionPronunciation = {
-  text?: string;
-  audio?: string;
-};
 
 type DictionaryEntry = {
   title?: string;
@@ -40,8 +25,6 @@ type DictionaryEntry = {
     }[];
   }[];
 };
-
-export type DictionaryCache = Record<string, DefinitionState>;
 
 function getDefinitionMeanings(data: DictionaryEntry[]): DefinitionMeaning[] {
   return data.flatMap((entry) =>
@@ -127,14 +110,6 @@ function mergeGroups(
     .sort(([a], [b]) => a - b);
 }
 
-export type Words = {
-  found?: string[];
-  missing?: string[];
-  extra?: string[];
-  /** used for create */
-  all?: string[];
-};
-
 type WordListContentProps = {
   words: Words;
   selectedWord: string | null;
@@ -161,7 +136,7 @@ function PlayWordList({
   );
 
   return (
-    <div className={styles.wordList}>
+    <ul className={styles.wordList}>
       {grouped.map(([length, entries]) => {
         const byKind = entries.reduce(
           (acc, entry) => {
@@ -190,7 +165,7 @@ function PlayWordList({
           </li>
         );
       })}
-    </div>
+    </ul>
   );
 }
 
