@@ -1,13 +1,17 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
-import CreatePage from "./pages/create/Create";
-import PlayPage from "./pages/play/Play";
+
+const CreatePage = lazy(() => import("./pages/create/Create"));
+const PlayPage = lazy(() => import("./pages/play/Play"));
 
 function App() {
   return (
-    <Routes>
-      <Route path="/create" element={<CreatePage />} />
-      <Route path="/play/:puzzleId" element={<PlayPage />} />
-    </Routes>
+    <Suspense fallback={<p>Loading...</p>}>
+      <Routes>
+        <Route path="/create" element={<CreatePage />} />
+        <Route path="/play/:puzzleId" element={<PlayPage />} />
+      </Routes>
+    </Suspense>
   )
 }
 
