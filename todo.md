@@ -1,0 +1,23 @@
+# Todo
+- ui/ux
+  - [x] popup on puzzle completion
+    - [ ] with info - ~~puzzle name~~, time
+  - [x] while creating, when done creating word list, clearing letters (making them not hard set) should update wordlist accordingly, as if you're playing
+  - [x] puzzle not found page
+  - [x] create puzzles w/ different size
+  - [x] after submitted created puzzle, "Play your puzzle" link shouldn't appear until there is a response from backend containing puzzle id
+  - [ ] homepage, existing puzzles/search page
+  - [x] make everything look not shit
+  - [x] clear board button
+- [ ] users w/ auth
+  - [ ] only registered users can create
+  - [ ] keeps track of completed puzzles
+  - [ ] creating a puzzle records the user who made it
+- [ ] auth to backend - not everyone should be able to access backend, especially /api/create
+
+- [ ] modify puzzle
+---
+- [x] puzzle stores answer
+  - [x] give up button
+- [x] dictionary: words can be clicked to view dictionary definition; use external dictionary api
+- [x] db changes: for each puzzle, have a separate "name" column that stores a readable name, and generate a unique "id" - this allows puzzles of same name

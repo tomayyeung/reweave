@@ -173,7 +173,7 @@ export default function CreatePage() {
             setWordListDone(!wordListDone);
           }}
         >
-          {wordListDone ? "Keep editing word list" : "Done with word list"}
+          {wordListDone ? "Unlock word list" : "Lock word list"}
         </button>
 
         {/* Puzzle submission */}
