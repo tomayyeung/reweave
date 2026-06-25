@@ -21,10 +21,16 @@ export type DefinitionPronunciation = {
 
 export type DictionaryCache = Record<string, DefinitionState>;
 
-export type Words = {
-  found?: string[];
-  missing?: string[];
-  extra?: string[];
-  /** used for create */
-  all?: string[];
+export type CreateWords = {
+  kind: "create";
+  all: string[];
 };
+
+export type PlayWords = {
+  kind: "play";
+  found: string[];
+  missing: string[];
+  extra: string[];
+};
+
+export type Words = CreateWords | PlayWords;

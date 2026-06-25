@@ -5,8 +5,9 @@ import styles from "./WordList.module.css";
 import type {
   DefinitionMeaning,
   DefinitionPronunciation,
+  CreateWords,
   DictionaryCache,
-  Words,
+  PlayWords,
 } from "./types";
 
 const NO_DEFINITION_TITLE = "No Definitions Found";
@@ -111,11 +112,18 @@ function mergeGroups(
 }
 
 type WordListContentProps = {
-  words: Words;
   selectedWord: string | null;
   definitions: DictionaryCache;
   onSelectWord: (word: string) => void;
   onCloseDefinition: () => void;
+};
+
+type PlayWordListProps = WordListContentProps & {
+  words: PlayWords;
+};
+
+type CreateWordListProps = WordListContentProps & {
+  words: CreateWords;
 };
 
 function PlayWordList({
@@ -124,10 +132,10 @@ function PlayWordList({
   definitions,
   onSelectWord,
   onCloseDefinition,
-}: WordListContentProps) {
-  const sortedFoundWords = groupAndSort(words.found!);
-  const sortedMissingWords = groupAndSort(words.missing!);
-  const sortedExtraWords = groupAndSort(words.extra!);
+}: PlayWordListProps) {
+  const sortedFoundWords = groupAndSort(words.found);
+  const sortedMissingWords = groupAndSort(words.missing);
+  const sortedExtraWords = groupAndSort(words.extra);
 
   const grouped = mergeGroups(
     sortedFoundWords,
@@ -175,8 +183,8 @@ function CreateWordList({
   definitions,
   onSelectWord,
   onCloseDefinition,
-}: WordListContentProps) {
-  const sortedWords = groupAndSort(words.all!);
+}: CreateWordListProps) {
+  const sortedWords = groupAndSort(words.all);
 
   return (
     <div className={styles.wordList}>
@@ -203,13 +211,11 @@ function CreateWordList({
   );
 }
 
-export function WordList({
-  listType,
-  words,
-}: {
-  listType: "Create" | "Play";
-  words: Words;
-}) {
+type WordListProps =
+  | { listType: "Create"; words: CreateWords }
+  | { listType: "Play"; words: PlayWords };
+
+export function WordList(props: WordListProps) {
   const [definitions, setDefinitions] = useState<DictionaryCache>({});
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
@@ -275,16 +281,15 @@ export function WordList({
   }
 
   const wordListProps = {
-    words,
     selectedWord,
     definitions,
     onSelectWord: selectWord,
     onCloseDefinition: () => setSelectedWord(null),
   };
 
-  if (listType === "Create") {
-    return <CreateWordList {...wordListProps} />;
+  if (props.listType === "Create") {
+    return <CreateWordList {...wordListProps} words={props.words} />;
   } else {
-    return <PlayWordList {...wordListProps} />;
+    return <PlayWordList {...wordListProps} words={props.words} />;
   }
 }

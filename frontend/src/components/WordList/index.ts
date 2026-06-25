@@ -1,12 +1,16 @@
-import type { Words } from "./types";
+import type { PlayWords, Words } from "./types";
 
-export type { Words } from "./types";
+export type { CreateWords, PlayWords, Words } from "./types";
 export { WordList } from "./WordList";
 
 export function wordsAsStringArr(words: Words) {
-  return [...words.found ?? [], ...words.missing ?? [], ...words.extra ?? [], ...words.all ?? []];
+  if (words.kind === "create") {
+    return words.all;
+  }
+
+  return [...words.found, ...words.missing, ...words.extra];
 }
 
-export function allWordsFound(words: Words) {
-  return words.missing!.length === 0 && words.extra!.length === 0;
+export function allWordsFound(words: PlayWords) {
+  return words.missing.length === 0 && words.extra.length === 0;
 }

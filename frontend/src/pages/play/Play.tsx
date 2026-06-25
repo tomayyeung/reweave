@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Board, BLANK, HOLE } from "@/components/Board";
 import { Menu } from "@/components/Menu";
 import { WordList, allWordsFound } from "@components/WordList";
-import type { Words } from "@components/WordList";
+import type { PlayWords } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
 import { useParams } from "react-router-dom";
 import { API_URL } from "@/config";
@@ -14,12 +14,22 @@ import styles from "./Play.module.css";
 
 type PendingAction = "solution" | "random" | "selected" | "clear";
 
+type PuzzleResponse = {
+  name: string;
+  width: number;
+  height: number;
+  letters: string;
+  answer: string;
+  error?: string;
+};
+
 export default function PlayPage() {
   const { puzzleId } = useParams();
 
   const [puzzleFetched, setPuzzleFetched] = useState<boolean | undefined>(
     undefined,
   );
+  const [loadError, setLoadError] = useState<string | undefined>();
 
   const [startingLetters, setStartingLetters] = useState("");
   const [boardLetters, setBoardLetters] = useState("");
@@ -37,20 +47,38 @@ export default function PlayPage() {
   const [usedHint, setUsedHint] = useState(false);
   const [selectedTile, setSelectedTile] = useState(-1);
 
-  const words: Words = puzzleFetched
-    ? check(boardLetters)
-    : { found: [], missing: [], extra: [] };
+  const words: PlayWords = puzzleFetched
+    ? { kind: "play", ...(check(boardLetters) as Omit<PlayWords, "kind">) }
+    : { kind: "play", found: [], missing: [], extra: [] };
   const complete = puzzleFetched && allWordsFound(words);
   const showRevealActions = puzzleFetched === true && !complete && !gaveUp;
 
   useEffect(() => {
     const route = `${API_URL}/api/puzzle/${puzzleId}`;
-    fetch(route)
-      .then((res) => res.json())
-      .then((puzzle) => {
+    let cancelled = false;
+
+    async function fetchPuzzle() {
+      setPuzzleFetched(undefined);
+      setLoadError(undefined);
+
+      try {
+        const response = await fetch(route);
+        const puzzle = (await response.json()) as PuzzleResponse;
+
+        if (!response.ok) {
+          if (puzzle.error?.startsWith("invalid puzzle id")) {
+            if (!cancelled) setPuzzleFetched(false);
+            return;
+          }
+
+          throw new Error(puzzle.error ?? "Failed to load puzzle");
+        }
+
         try {
           // load puzzle for wasm
           loadPuzzle(puzzle);
+
+          if (cancelled) return;
 
           // then load puzzle for rendering
           setPuzzleName(puzzle.name);
@@ -73,12 +101,28 @@ export default function PlayPage() {
 
           setPuzzleFetched(true);
         } catch {
-          const error: string = puzzle.error;
-          if (error.startsWith("invalid puzzle id")) {
-            setPuzzleFetched(false);
+          if (puzzle.error?.startsWith("invalid puzzle id")) {
+            if (!cancelled) setPuzzleFetched(false);
+            return;
           }
+
+          throw new Error(puzzle.error ?? "Failed to load puzzle");
         }
-      });
+      } catch (error) {
+        if (cancelled) return;
+
+        setLoadError(
+          error instanceof Error ? error.message : "Failed to load puzzle",
+        );
+        setPuzzleFetched(false);
+      }
+    }
+
+    void fetchPuzzle();
+
+    return () => {
+      cancelled = true;
+    };
   }, [puzzleId]);
 
   function revealTile(idx: number) {
@@ -163,7 +207,7 @@ export default function PlayPage() {
       case undefined:
         return <p>Loading puzzle...</p>;
       case false:
-        return <p>Puzzle not found</p>;
+        return <p>{loadError ?? "Puzzle not found"}</p>;
       default:
         return (
           <Board

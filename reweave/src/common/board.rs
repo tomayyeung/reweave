@@ -20,26 +20,32 @@ const HOLE: char = '!';
 
 impl Board {
     /// Create a Board given a width, height, and a vector of characters
-    /// Panics if the length of chars does not match width * height
     /// For an empty cell, pass in '_'
     pub fn create(width: usize, height: usize, chars: Vec<char>) -> Result<Self, String> {
-        assert_eq!(width * height, chars.len());
+        if width * height != chars.len() {
+            return Err(format!(
+                "Board dimensions {width}x{height} do not match {} letters",
+                chars.len()
+            ));
+        }
 
         let mut cells: Vec<Vec<Option<char>>> = Vec::new();
-        let mut i = 0;
+        let mut chars = chars.into_iter();
+
         for _ in 0..height {
             let mut row = Vec::new();
 
             for _ in 0..width {
-                let c = chars.get(i).unwrap();
-                i += 1;
+                let Some(c) = chars.next() else {
+                    return Err("Board dimensions changed while creating board".to_string());
+                };
 
-                if *c == BLANK || *c == HOLE {
+                if c == BLANK || c == HOLE {
                     // Empty cell / hole in puzzle
                     row.push(None);
                 } else if c.is_ascii_lowercase() {
                     // Is valid letter
-                    row.push(Some(*c));
+                    row.push(Some(c));
                 } else {
                     return Err(format!("Invalid character when creating board {c}"));
                 }
@@ -237,5 +243,12 @@ mod tests {
         found_words.sort();
 
         assert_eq!(found_words, vec!["throb"]);
+    }
+
+    #[test]
+    fn create_rejects_wrong_length() {
+        let board = Board::create(2, 2, vec!['a', 'b', 'c']);
+
+        assert!(board.is_err());
     }
 }

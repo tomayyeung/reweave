@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import { Board, BLANK } from "@/components/Board";
 import { WordList, wordsAsStringArr } from "@components/WordList";
-import type { Words } from "@components/WordList";
+import type { PlayWords, Words } from "@components/WordList";
 import { Popup } from "@components/Popup";
 import { Wrapper } from "@components/Wrapper";
 
@@ -27,17 +27,21 @@ export default function CreatePage() {
   );
   const [puzzleId, setPuzzleId] = useState<string | undefined>();
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | undefined>();
   const [pendingSize, setPendingSize] = useState<
     { width: number; height: number } | undefined
   >();
 
   const words: Words = wordListDone
-    ? check(
-        [...boardLetters]
-          .map((letter, idx) => (hardSet[idx] ? letter : BLANK))
-          .join(""),
-      )
-    : { all: find(width, height, boardLetters) };
+    ? {
+        kind: "play",
+        ...(check(
+          [...boardLetters]
+            .map((letter, idx) => (hardSet[idx] ? letter : BLANK))
+            .join(""),
+        ) as Omit<PlayWords, "kind">),
+      }
+    : { kind: "create", all: find(width, height, boardLetters) };
 
   function applySize(width: number, height: number) {
     setWidth(width);
@@ -62,28 +66,45 @@ export default function CreatePage() {
   async function submitPuzzle(formData: FormData) {
     if (submitted) return;
 
-    fetch(`${API_URL}/api/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: formData.get("puzzle-name"),
-        width: width,
-        height: height,
-        letters: hardSet
-          .map((isSet, i) => (isSet ? boardLetters[i] : BLANK))
-          .join(""),
-        words: wordsAsStringArr(words),
-        answer: boardLetters,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setPuzzleId(data.id);
+    setSubmitted(true);
+    setSubmitError(undefined);
+    setPuzzleId(undefined);
+
+    try {
+      const response = await fetch(`${API_URL}/api/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.get("puzzle-name"),
+          width: width,
+          height: height,
+          letters: hardSet
+            .map((isSet, i) => (isSet ? boardLetters[i] : BLANK))
+            .join(""),
+          words: wordsAsStringArr(words),
+          answer: boardLetters,
+        }),
       });
 
-    setSubmitted(true);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Failed to create puzzle");
+      }
+
+      if (typeof data.id !== "string") {
+        throw new Error("Create response did not include a puzzle id");
+      }
+
+      setPuzzleId(data.id);
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error ? error.message : "Failed to create puzzle",
+      );
+      setSubmitted(false);
+    }
   }
 
   return (
@@ -131,10 +152,11 @@ export default function CreatePage() {
         </div>
 
         {/* Wordlist for creating */}
-        <WordList
-          listType={`${wordListDone ? "Play" : "Create"}`}
-          words={words}
-        />
+        {words.kind === "create" ? (
+          <WordList listType="Create" words={words} />
+        ) : (
+          <WordList listType="Play" words={words} />
+        )}
       </Wrapper>
 
       {/* User input to lock in letters, confirming the puzzle's word list */}
@@ -143,8 +165,8 @@ export default function CreatePage() {
           type="button"
           className={styles.secondaryButton}
           onClick={() => {
-            if (!wordListDone) {
-              loadPuzzleForCreate(width, height, words.all!);
+            if (words.kind === "create") {
+              loadPuzzleForCreate(width, height, words.all);
             } else {
               setHardSet(new Array(width * height).fill(true));
             }
@@ -181,6 +203,10 @@ export default function CreatePage() {
             Play your puzzle!
           </Link>
         ))}
+
+      {submitError !== undefined && (
+        <p className={styles.status}>Could not create puzzle: {submitError}</p>
+      )}
 
       {/* Confirmation for updating board size */}
       {pendingSize !== undefined && (
