@@ -33,6 +33,90 @@
   font-weight: 850;
 }
 
+.wordWrapper {
+  position: relative;
+  display: inline-block;
+  margin-right: 0.35rem;
+}
+
+.wordButton {
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+}
+
+.wordButton:hover {
+  transform: none;
+  color: var(--accent-strong);
+}
+
+.wordButton:focus-visible {
+  outline: 3px solid rgb(47 127 115 / 30%);
+  outline-offset: 3px;
+}
+
+.definitionPopup {
+  position: fixed;
+  z-index: 1100;
+  width: min(24rem, calc(100vw - 3rem));
+  max-height: min(28rem, calc(100vh - 3rem));
+  overflow: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.definitionMeanings section {
+  margin-bottom: 0.85rem;
+}
+
+.definitionMeanings section:last-child {
+  margin-bottom: 0;
+}
+
+.partOfSpeech {
+  margin-bottom: 0.25rem;
+  color: var(--accent-strong);
+  font-weight: 850;
+  text-transform: capitalize;
+}
+
+.definitionMeanings ol {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.definitionMeanings li {
+  margin-bottom: 0.35rem;
+}
+
+.definitionMeanings li:last-child {
+  margin-bottom: 0;
+}
+
+.definitionClose {
+  display: block;
+  min-height: 0;
+  margin-top: 0.6rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.8rem;
+}
+
 .found {
   color: var(--success);
   font-weight: 750;

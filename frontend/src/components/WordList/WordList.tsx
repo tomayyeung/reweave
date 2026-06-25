@@ -1,4 +1,51 @@
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+
 import styles from "./WordList.module.css";
+
+const NO_DEFINITION_TITLE = "No Definitions Found";
+
+type DefinitionState =
+  | { status: "loading" }
+  | { status: "loaded"; meanings: DefinitionMeaning[] }
+  | { status: "not-found" }
+  | { status: "error" };
+
+type DefinitionMeaning = {
+  partOfSpeech: string;
+  definitions: string[];
+};
+
+type DictionaryEntry = {
+  title?: string;
+  meanings?: {
+    partOfSpeech?: string;
+    definitions?: {
+      definition?: string;
+    }[];
+  }[];
+};
+
+type DictionaryCache = Record<string, DefinitionState>;
+
+function getDefinitionMeanings(data: DictionaryEntry[]): DefinitionMeaning[] {
+  return data.flatMap((entry) =>
+    (entry.meanings ?? []).flatMap((meaning) => {
+      const definitions = (meaning.definitions ?? [])
+        .map(({ definition }) => definition)
+        .filter((definition): definition is string => definition !== undefined);
+
+      if (definitions.length === 0) return [];
+
+      return [
+        {
+          partOfSpeech: meaning.partOfSpeech ?? "Meaning",
+          definitions,
+        },
+      ];
+    }),
+  );
+}
 
 function groupAndSort(words: string[]): [number, string[]][] {
   const groups: Record<number, string[]> = {};
@@ -48,7 +95,143 @@ export type Words = {
   all?: string[];
 };
 
-function PlayWordList({ words }: { words: Words }) {
+type WordButtonProps = {
+  word: string;
+  className?: string;
+  selectedWord: string | null;
+  definitions: DictionaryCache;
+  onSelect: (word: string) => void;
+  onClose: () => void;
+};
+
+type PopupPosition = {
+  top: number;
+  left: number;
+};
+
+function WordButton({
+  word,
+  className,
+  selectedWord,
+  definitions,
+  onSelect,
+  onClose,
+}: WordButtonProps) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const [popupPosition, setPopupPosition] = useState<PopupPosition | null>(null);
+  const normalizedWord = word.toLowerCase();
+  const definition = definitions[normalizedWord];
+  const isSelected = selectedWord === normalizedWord;
+
+  useEffect(() => {
+    if (!isSelected) return;
+
+    function updatePopupPosition() {
+      const button = buttonRef.current;
+      if (!button) return;
+
+      const buttonRect = button.getBoundingClientRect();
+      const popupRect = popupRef.current?.getBoundingClientRect();
+      const popupWidth = popupRect?.width ?? 288;
+      const popupHeight = popupRect?.height ?? 120;
+      const gap = 8;
+      const viewportPadding = 12;
+      const bottomTop = buttonRect.bottom + gap;
+      const aboveTop = buttonRect.top - popupHeight - gap;
+      const hasBottomSpace = bottomTop + popupHeight <= window.innerHeight - viewportPadding;
+      const top = hasBottomSpace ? bottomTop : Math.max(viewportPadding, aboveTop);
+      const left = Math.min(
+        Math.max(viewportPadding, buttonRect.left),
+        window.innerWidth - popupWidth - viewportPadding,
+      );
+
+      setPopupPosition({ top, left });
+    }
+
+    updatePopupPosition();
+    window.addEventListener("resize", updatePopupPosition);
+    window.addEventListener("scroll", updatePopupPosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updatePopupPosition);
+      window.removeEventListener("scroll", updatePopupPosition, true);
+    };
+  }, [isSelected, definition]);
+
+  return (
+    <span className={styles.wordWrapper}>
+      <button
+        ref={buttonRef}
+        type="button"
+        className={`${styles.wordButton} ${className ?? ""}`}
+        onClick={() => onSelect(word)}
+        aria-expanded={isSelected}
+      >
+        {word}
+      </button>{" "}
+      {isSelected &&
+        createPortal(
+          <div
+            ref={popupRef}
+            className={styles.definitionPopup}
+            role="dialog"
+            style={popupPosition ?? undefined}
+          >
+            {definition?.status === "loaded" ? (
+              <div className={styles.definitionMeanings}>
+                {definition.meanings.map((meaning, meaningIndex) => (
+                  <section key={`${meaning.partOfSpeech}-${meaningIndex}`}>
+                    <p className={styles.partOfSpeech}>{meaning.partOfSpeech}</p>
+                    <ol>
+                      {meaning.definitions.map((definitionText, definitionIndex) => (
+                        <li key={`${definitionIndex}-${definitionText}`}>
+                          {definitionText}
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                ))}
+              </div>
+            ) : (
+              <span>
+                {definition?.status === "not-found"
+                  ? "No definition found"
+                  : definition?.status === "error"
+                    ? "Error retrieving definition"
+                    : "Loading definition"}
+              </span>
+            )}
+            <button
+              type="button"
+              className={styles.definitionClose}
+              onClick={onClose}
+              aria-label="Close definition"
+            >
+              Close
+            </button>
+          </div>,
+          document.body,
+        )}
+    </span>
+  );
+}
+
+type WordListContentProps = {
+  words: Words;
+  selectedWord: string | null;
+  definitions: DictionaryCache;
+  onSelectWord: (word: string) => void;
+  onCloseDefinition: () => void;
+};
+
+function PlayWordList({
+  words,
+  selectedWord,
+  definitions,
+  onSelectWord,
+  onCloseDefinition,
+}: WordListContentProps) {
   const sortedFoundWords = groupAndSort(words.found!);
   const sortedMissingWords = groupAndSort(words.missing!);
   const sortedExtraWords = groupAndSort(words.extra!);
@@ -75,9 +258,15 @@ function PlayWordList({ words }: { words: Words }) {
             <p className={styles.lengthLabel}>{length} letters: </p>
             {(["found", "missing", "extra"] as const).map((kind) =>
               byKind[kind]?.map(({ word }) => (
-                <span key={word} className={styles[kind]}>
-                  {word}{" "}
-                </span>
+                <WordButton
+                  key={word}
+                  word={word}
+                  className={styles[kind]}
+                  selectedWord={selectedWord}
+                  definitions={definitions}
+                  onSelect={onSelectWord}
+                  onClose={onCloseDefinition}
+                />
               )),
             )}
           </li>
@@ -87,25 +276,105 @@ function PlayWordList({ words }: { words: Words }) {
   );
 }
 
-function CreateWordList({ words }: { words: Words }) {
+function CreateWordList({
+  words,
+  selectedWord,
+  definitions,
+  onSelectWord,
+  onCloseDefinition,
+}: WordListContentProps) {
   const sortedWords = groupAndSort(words.all!);
 
   return (
     <div className={styles.wordList}>
       {sortedWords.map(([length, words], idx) => {
-        return <div key={idx}>
-          <p className={styles.lengthLabel}>{length} letters</p>
-          <p>{words.join(" ")}</p>
-        </div>;
+        return (
+          <div key={idx}>
+            <p className={styles.lengthLabel}>{length} letters</p>
+            <p>
+              {words.map((word) => (
+                <WordButton
+                  key={word}
+                  word={word}
+                  selectedWord={selectedWord}
+                  definitions={definitions}
+                  onSelect={onSelectWord}
+                  onClose={onCloseDefinition}
+                />
+              ))}
+            </p>
+          </div>
+        );
       })}
     </div>
   );
 }
 
 export function WordList({ listType, words}: { listType: "Create" | "Play", words: Words}) {
+  const [definitions, setDefinitions] = useState<DictionaryCache>({});
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+
+  async function selectWord(word: string) {
+    const normalizedWord = word.toLowerCase();
+
+    setSelectedWord(normalizedWord);
+
+    if (definitions[normalizedWord]) return;
+
+    setDefinitions((currentDefinitions) => ({
+      ...currentDefinitions,
+      [normalizedWord]: { status: "loading" },
+    }));
+
+    try {
+      const response = await fetch(
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(normalizedWord)}`,
+      );
+      const data = await response.json() as DictionaryEntry[] | DictionaryEntry;
+
+      if (!Array.isArray(data) && data.title === NO_DEFINITION_TITLE) {
+        setDefinitions((currentDefinitions) => ({
+          ...currentDefinitions,
+          [normalizedWord]: { status: "not-found" },
+        }));
+        return;
+      }
+
+      if (!response.ok || !Array.isArray(data)) {
+        setDefinitions((currentDefinitions) => ({
+          ...currentDefinitions,
+          [normalizedWord]: { status: "error" },
+        }));
+        return;
+      }
+
+      const definitionMeanings = getDefinitionMeanings(data);
+
+      setDefinitions((currentDefinitions) => ({
+        ...currentDefinitions,
+        [normalizedWord]: definitionMeanings.length > 0
+          ? { status: "loaded", meanings: definitionMeanings }
+          : { status: "not-found" },
+      }));
+    } catch {
+      setDefinitions((currentDefinitions) => ({
+        ...currentDefinitions,
+        [normalizedWord]: { status: "error" },
+      }));
+    }
+  }
+
+  const wordListProps = {
+    words,
+    selectedWord,
+    definitions,
+    onSelectWord: selectWord,
+    onCloseDefinition: () => setSelectedWord(null),
+  };
+
   if (listType === "Create") {
-    return <CreateWordList words={words} />
+    return <CreateWordList {...wordListProps} />
   } else {
-    return <PlayWordList words={words} />
+    return <PlayWordList {...wordListProps} />
   }
 }
