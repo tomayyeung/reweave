@@ -30,11 +30,12 @@ export default function PlayPage() {
   const [h, setHeight] = useState(0);
 
   const [answer, setAnswer] = useState("");
-  const [pendingAction, setPendingAction] = useState<PendingAction | undefined>();
+  const [pendingAction, setPendingAction] = useState<
+    PendingAction | undefined
+  >();
   const [gaveUp, setGaveUp] = useState(false);
   const [usedHint, setUsedHint] = useState(false);
   const [selectedTile, setSelectedTile] = useState(-1);
-
 
   const words: Words = puzzleFetched
     ? check(boardLetters)
@@ -94,6 +95,7 @@ export default function PlayPage() {
     const revealedTile = answerTile === BLANK ? HOLE : answerTile;
     setBoardLetters([...boardLetters].with(idx, revealedTile).join(""));
     setHardSet(hardSet.with(idx, true));
+    setStartingLetters([...startingLetters].with(idx, revealedTile).join("")); // make it a permanent change for this session
     setUsedHint(true);
   }
 
@@ -101,14 +103,16 @@ export default function PlayPage() {
     const eligibleTiles = [...answer]
       .map((letter, idx) => ({ letter, idx }))
       .filter(
-        ({ letter, idx }) => letter !== BLANK && letter !== HOLE && !hardSet[idx],
+        ({ letter, idx }) =>
+          letter !== BLANK && letter !== HOLE && !hardSet[idx],
       );
 
     if (eligibleTiles.length === 0) {
       return;
     }
 
-    const { idx } = eligibleTiles[Math.floor(Math.random() * eligibleTiles.length)];
+    const { idx } =
+      eligibleTiles[Math.floor(Math.random() * eligibleTiles.length)];
     revealTile(idx);
   }
 
@@ -134,7 +138,7 @@ export default function PlayPage() {
       case "selected":
         return "Reveal selected tile";
       case "clear":
-        return "Clear board"
+        return "Clear board";
     }
   }
 
@@ -223,7 +227,9 @@ export default function PlayPage() {
               ) : null}
             </div>
             <h4 hidden={!complete || gaveUp || usedHint}>Completed!</h4>
-            <h4 hidden={!complete || gaveUp || !usedHint}>Completed with hints!</h4>
+            <h4 hidden={!complete || gaveUp || !usedHint}>
+              Completed with hints!
+            </h4>
             <h4 className={styles.revealedStatus} hidden={!gaveUp}>
               Solution revealed.
             </h4>
