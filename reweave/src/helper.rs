@@ -105,3 +105,50 @@ pub async fn load_puzzle(inp: LoadInput) -> Result<puzzle::Puzzle, ErrorResponse
         ))),
     }
 }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PuzzleSummary {
+    id: String,
+    name: String,
+    width: usize,
+    height: usize,
+    starting_letters: usize,
+    total_cells: usize,
+    given_percent: u8,
+    description: Option<String>,
+}
+
+pub async fn list_puzzles() -> Result<Vec<PuzzleSummary>, ErrorResponse> {
+    let records = list_puzzle_records()
+        .await
+        .map_err(|e| ErrorResponse(e.to_string()))?;
+
+    Ok(records
+        .into_iter()
+        .map(|record| {
+            let total_cells = record.width * record.height;
+            let starting_letters = record
+                .letters
+                .chars()
+                .filter(|letter| *letter != '_' && *letter != '!')
+                .count();
+            let given_percent = if total_cells == 0 {
+                0
+            } else {
+                ((starting_letters * 100 + total_cells / 2) / total_cells) as u8
+            };
+
+            PuzzleSummary {
+                id: record.id,
+                name: record.name,
+                width: record.width,
+                height: record.height,
+                starting_letters,
+                total_cells,
+                given_percent,
+                description: None,
+            }
+        })
+        .collect())
+}

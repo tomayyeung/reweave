@@ -47,13 +47,15 @@ body {
 }
 
 #root {
+  display: flex;
+  flex-direction: column;
   height: 100svh;
   overflow: hidden;
 }
 
 main {
   display: flex;
-  height: 100svh;
+  flex: 1 1 auto;
   width: min(1180px, calc(100% - 32px));
   min-height: 0;
   flex-direction: column;

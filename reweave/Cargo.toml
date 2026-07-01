@@ -34,3 +34,7 @@ path = "api/create.rs"
 name = "puzzle"
 # path = "api/puzzle/[id].rs"
 path = "api/puzzle.rs"
+
+[[bin]]
+name = "puzzles"
+path = "api/puzzles.rs"

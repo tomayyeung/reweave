@@ -1,6 +1,7 @@
 use sqlx::PgPool;
 use std::error::Error;
 use std::sync::OnceLock;
+use tokio::fs;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
@@ -17,6 +18,35 @@ struct PuzzleRow {
     pub letters: String,
     pub words: Vec<String>,
     pub answer: String,
+}
+
+#[derive(sqlx::FromRow)]
+struct PuzzleSummaryRow {
+    pub id: Uuid,
+    pub name: String,
+    pub width: i32,
+    pub height: i32,
+    pub letters: String,
+}
+
+pub struct PuzzleSummaryRecord {
+    pub id: String,
+    pub name: String,
+    pub width: usize,
+    pub height: usize,
+    pub letters: String,
+}
+
+impl From<PuzzleSummaryRow> for PuzzleSummaryRecord {
+    fn from(row: PuzzleSummaryRow) -> Self {
+        PuzzleSummaryRecord {
+            id: row.id.to_string(),
+            name: row.name,
+            width: row.width as usize,
+            height: row.height as usize,
+            letters: row.letters,
+        }
+    }
 }
 
 impl From<PuzzleRow> for Puzzle {
@@ -52,6 +82,44 @@ pub async fn get_puzzle(puzzle_id: &str) -> Option<Puzzle> {
         };
 
         Some(Puzzle::from(puzzle_row))
+    }
+}
+
+pub async fn list_puzzle_records() -> Result<Vec<PuzzleSummaryRecord>, Box<dyn Error>> {
+    if std::env::var("USE_LOCAL_FILES").is_ok() {
+        let mut records = Vec::new();
+        let mut entries = fs::read_dir("../puzzles").await?;
+
+        while let Some(entry) = entries.next_entry().await? {
+            let path = entry.path();
+            if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
+                continue;
+            }
+
+            let puzzle = Puzzle::from_file(path.to_string_lossy().as_ref())?;
+            let Some(id) = path.file_stem().and_then(|name| name.to_str()) else {
+                continue;
+            };
+
+            records.push(PuzzleSummaryRecord {
+                id: id.to_string(),
+                name: puzzle.name,
+                width: puzzle.width,
+                height: puzzle.height,
+                letters: puzzle.letters,
+            });
+        }
+
+        records.sort_by(|a, b| a.name.cmp(&b.name));
+        Ok(records)
+    } else {
+        let rows = sqlx::query_as::<_, PuzzleSummaryRow>(
+            "SELECT id, name, width, height, letters FROM puzzles ORDER BY name ASC",
+        )
+        .fetch_all(get_puzzles_pool())
+        .await?;
+
+        Ok(rows.into_iter().map(PuzzleSummaryRecord::from).collect())
     }
 }
 

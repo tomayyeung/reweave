@@ -1,4 +1,8 @@
 # Todo
+- homepage
+  - [ ] navbar (create, search, user)
+  - [ ] list existing puzzles
+  - [ ] /search page
 - ui/ux
   - [x] popup on puzzle completion
     - [ ] with info - ~~puzzle name~~, time
@@ -6,7 +10,6 @@
   - [x] puzzle not found page
   - [x] create puzzles w/ different size
   - [x] after submitted created puzzle, "Play your puzzle" link shouldn't appear until there is a response from backend containing puzzle id
-  - [ ] homepage, existing puzzles/search page
   - [x] make everything look not shit
   - [x] clear board button
 - [ ] users w/ auth
