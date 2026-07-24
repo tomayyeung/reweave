@@ -96,7 +96,7 @@ The generated WASM typing for `check` returns `any`, so frontend page boundaries
 
 The playable dictionary is embedded into the frontend WASM crate with `include_str!("../../wordlist/wordlist.txt")`. If the dictionary changes, rebuild the WASM package before building or deploying the frontend.
 
-The `wordlist/` generator starts from the 2024 Collins Scrabble Word list and filters it with a local blacklist. Its source inputs, `CSW24.txt` and `blacklist.txt`, are gitignored.
+The `wordlist/` generator starts from a wordlist sourced from [this repository](https://github.com/dwyl/english-words/blob/master/words.txt) and filters it with a local blacklist. Its source inputs, `words.txt` and `blacklist.txt`, are gitignored.
 
 ## Development
 

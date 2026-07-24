@@ -7,7 +7,7 @@ frontend/pkg
 
 wordlist/target
 wordlist/blacklist.txt
-wordlist/CSW24.txt
+wordlist/words.txt
 
 .env
 

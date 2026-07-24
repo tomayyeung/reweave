@@ -59,5 +59,5 @@
 - `Board::create` and `Puzzle::create` return `Result`; invalid board dimensions or invalid letters should be handled as errors, not panics.
 - The WASM `check` return type is `any` in generated typings; cast it at frontend boundaries into `PlayWords` rather than spreading `any` through component props.
 - The WASM crate embeds `wordlist/wordlist.txt` with `include_str!`; update that file before rebuilding WASM if changing the playable dictionary.
-- The word list generator in `wordlist/` depends on local `CSW24.txt` and `blacklist.txt`; those inputs are gitignored.
+- The word list generator in `wordlist/` depends on local `words.txt` and `blacklist.txt`; those inputs are gitignored.
 - `frontend/pkg/` and `frontend/dist/` are generated. Do not manually edit generated WASM package files or built assets.

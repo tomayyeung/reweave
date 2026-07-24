@@ -1,6 +1,6 @@
 //! Standalone word-list generator for the playable dictionary.
 //!
-//! This crate reads local `CSW24.txt` and `blacklist.txt` inputs, filters short
+//! This crate reads local `words.txt` and `blacklist.txt` inputs, filters short
 //! and blacklisted words, and overwrites `wordlist.txt`. The inputs are
 //! gitignored, so this crate is intentionally excluded from the workspace.
 
@@ -48,17 +48,19 @@ fn expand_blacklist(base: &HashSet<String>) -> HashSet<String> {
 /// The source dictionary is expected to be ASCII, so byte length matches word
 /// length for normal inputs.
 fn remove_short_words(words: HashSet<String>, length: usize) -> HashSet<String> {
+    words.into_iter().filter(|w| w.len() >= length).collect()
+}
+
+/// Removes words that contain characters that are not lowercase letters; this includes symbols, numbers, and uppercase letters.
+fn remove_non_lowercase(words: HashSet<String>) -> HashSet<String> {
     words
         .into_iter()
-        .filter(|w| w.len() >= length)
+        .filter(|s| s.chars().all(|c| c.is_ascii_lowercase()))
         .collect()
 }
 
 /// Filters blacklisted words and returns the remaining words in unspecified order.
-fn filter_words(
-    words: HashSet<String>,
-    blacklist: &HashSet<String>,
-) -> Vec<String> {
+fn filter_words(words: HashSet<String>, blacklist: &HashSet<String>) -> Vec<String> {
     words
         .into_iter()
         .filter(|w| !blacklist.contains(w))
@@ -71,8 +73,8 @@ fn write_words(path: &str, words: &[String]) {
     fs::write(path, content).expect("Failed to write file");
 }
 
-/// 2024 Collins Scrabble Word list.
-const ORIG_WORD_LIST: &str = "CSW24.txt";
+/// Wordlist sourced from https://github.com/dwyl/english-words/blob/master/words.txt.
+const ORIG_WORD_LIST: &str = "words.txt";
 
 /// Modified list from https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words?tab=readme-ov-file.
 const BLACKLIST: &str = "blacklist.txt";
@@ -85,8 +87,8 @@ fn main() {
     let words = load_words(ORIG_WORD_LIST);
     println!("Started with {} words", words.len());
 
-    // Remove words shorter than 4 letters
-    let words = remove_short_words(words, 4);
+    // Remove words shorter than 4 letters and words with non-lowercase characters
+    let words = remove_non_lowercase(remove_short_words(words, 4));
 
     // Load blacklist
     let blacklist = expand_blacklist(&load_words(BLACKLIST));
