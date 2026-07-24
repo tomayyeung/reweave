@@ -2,7 +2,6 @@
 - update screenshots (as app changes, remove dev stuff, etc)
 - ui/ux
 - [ ] mobile support
-- [ ] big words
 ---
 - [x] puzzle stores answer
   - [x] give up button
@@ -27,4 +26,4 @@
   - [x] creating a puzzle records the user who made it
 - [x] auth to backend - not everyone should be able to access backend, especially /api/create
 - [x] modify puzzle
- 
+- [x] big words
