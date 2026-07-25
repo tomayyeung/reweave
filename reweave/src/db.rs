@@ -42,6 +42,9 @@ struct PuzzleRow {
     pub letters: String,
     pub words: Vec<String>,
     pub answer: String,
+    pub creator_username: String,
+    pub creator_display_name: Option<String>,
+    pub creator_role: String,
 }
 
 /// SQL row used when listing puzzle summaries.
@@ -125,6 +128,18 @@ pub struct PuzzleSummaryRecord {
     pub likes: u64,
     /// Puzzle creation timestamp formatted by PostgreSQL.
     pub created_at: String,
+    /// Creator's public username.
+    pub creator_username: String,
+    /// Creator's optional display name.
+    pub creator_display_name: Option<String>,
+    /// Creator role, where `admin` marks official puzzles.
+    pub creator_role: String,
+}
+
+/// Internal playable puzzle record with public creator metadata.
+pub struct LoadedPuzzleRecord {
+    /// Full puzzle payload used by the play page and WASM checker.
+    pub puzzle: Puzzle,
     /// Creator's public username.
     pub creator_username: String,
     /// Creator's optional display name.
@@ -219,20 +234,25 @@ pub struct ClerkUserData {
     pub email: Option<String>,
 }
 
-impl From<PuzzleRow> for Puzzle {
-    /// Converts a database row into the shared puzzle model.
+impl From<PuzzleRow> for LoadedPuzzleRecord {
+    /// Converts a database row into the playable puzzle record.
     ///
     /// Database integer dimensions are cast to `usize`, and the SQL word array is
     /// collected into the puzzle's `HashSet`.
     fn from(row: PuzzleRow) -> Self {
-        Puzzle {
-            name: row.name,
-            description: row.description,
-            width: row.width as usize,
-            height: row.height as usize,
-            letters: row.letters,
-            words: row.words.into_iter().collect(),
-            answer: row.answer,
+        LoadedPuzzleRecord {
+            puzzle: Puzzle {
+                name: row.name,
+                description: row.description,
+                width: row.width as usize,
+                height: row.height as usize,
+                letters: row.letters,
+                words: row.words.into_iter().collect(),
+                answer: row.answer,
+            },
+            creator_username: row.creator_username,
+            creator_display_name: row.creator_display_name,
+            creator_role: row.creator_role,
         }
     }
 }
@@ -374,9 +394,9 @@ pub async fn update_puzzle_metadata(
 ///
 /// Invalid UUIDs, missing rows, and query failures are collapsed to `None` for
 /// API-level invalid-ID handling.
-pub async fn get_puzzle(puzzle_id: &str) -> Option<Puzzle> {
+pub async fn get_puzzle(puzzle_id: &str) -> Option<LoadedPuzzleRecord> {
     let Ok(puzzle_row) = sqlx::query_as::<_, PuzzleRow>(
-        "SELECT name, description, width, height, letters, words, answer FROM puzzles WHERE id = $1",
+        "SELECT p.name, p.description, p.width, p.height, p.letters, p.words, p.answer, u.username AS creator_username, u.display_name AS creator_display_name, u.role AS creator_role FROM puzzles p JOIN users u ON u.id = p.created_by_user_id WHERE p.id = $1",
     )
     .bind(Uuid::parse_str(puzzle_id).ok()?)
     .fetch_one(get_puzzles_pool())
@@ -385,7 +405,7 @@ pub async fn get_puzzle(puzzle_id: &str) -> Option<Puzzle> {
         return None;
     };
 
-    Some(Puzzle::from(puzzle_row))
+    Some(LoadedPuzzleRecord::from(puzzle_row))
 }
 
 /// Lists puzzle summaries matching dynamic search filters.

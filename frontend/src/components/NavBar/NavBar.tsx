@@ -87,8 +87,8 @@ export function NavBar() {
           >
             Search
           </NavLink>
-          <span className={styles.placeholderLink}>Archive</span>
-          <span className={styles.placeholderLink}>Stats</span>
+          {/* <span className={styles.placeholderLink}>Archive</span>
+          <span className={styles.placeholderLink}>Stats</span> */}
           <NavLink
             className={({ isActive }) =>
               isActive

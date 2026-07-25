@@ -6,11 +6,13 @@ import { Menu } from "@/components/Menu";
 import { WordList, allWordsFound } from "@components/WordList";
 import type { PlayWords } from "@components/WordList";
 import { Wrapper } from "@components/Wrapper";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { API_URL } from "@/config";
 
 import { check, load_puzzle as loadPuzzle } from "@wasm/frontend";
 import { Popup } from "@/components/Popup";
+import { creatorLabel } from "@utils/creatorLabel";
+import type { Creator } from "@utils/creatorLabel";
 import styles from "./Play.module.css";
 
 /** Pending reveal/reset action that must be confirmed in a popup. */
@@ -24,6 +26,7 @@ type PuzzleResponse = {
   height: number;
   letters: string;
   answer: string;
+  creator: Creator;
   error?: string;
 };
 
@@ -93,6 +96,7 @@ export default function PlayPage() {
   const [puzzleDescription, setPuzzleDescription] = useState<string | null>(
     null,
   );
+  const [puzzleCreator, setPuzzleCreator] = useState<Creator | undefined>();
   const [w, setWidth] = useState(0);
   const [h, setHeight] = useState(0);
 
@@ -127,6 +131,7 @@ export default function PlayPage() {
     async function fetchPuzzle() {
       setPuzzleFetched(undefined);
       setLoadError(undefined);
+      setPuzzleCreator(undefined);
 
       try {
         const response = await fetch(route, { signal: controller.signal });
@@ -150,6 +155,7 @@ export default function PlayPage() {
           // Then load puzzle for React rendering.
           setPuzzleName(puzzle.name);
           setPuzzleDescription(puzzle.description);
+          setPuzzleCreator(puzzle.creator);
           setWidth(puzzle.width);
           setHeight(puzzle.height);
 
@@ -372,6 +378,17 @@ export default function PlayPage() {
                 <h3>Puzzle: {puzzleName}</h3>
                 {puzzleDescription !== null ? (
                   <p className={styles.description}>{puzzleDescription}</p>
+                ) : null}
+                {puzzleCreator !== undefined ? (
+                  <p className={styles.creator}>
+                    By{" "}
+                    <Link
+                      className={styles.creatorLink}
+                      to={{ pathname: `/profile/${puzzleCreator.username}` }}
+                    >
+                      {creatorLabel(puzzleCreator)}
+                    </Link>
+                  </p>
                 ) : null}
               </div>
               {puzzleFetched === true ? (

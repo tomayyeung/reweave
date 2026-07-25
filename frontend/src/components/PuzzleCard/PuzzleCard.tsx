@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@clerk/react";
 
 import { API_URL } from "@/config";
-import type { CurrentUser } from "@/useCurrentUser";
+import type { CurrentUser } from "@utils/useCurrentUser";
+import type { Creator } from "@utils/creatorLabel";
+import { creatorLabel } from "@utils/creatorLabel";
 
 import styles from "./PuzzleCard.module.css";
 
@@ -21,11 +23,7 @@ export type PuzzleSummary = {
   givenPercent: number;
   plays: number;
   completions: number;
-  creator: {
-    username: string;
-    displayName: string | null;
-    official: boolean;
-  };
+  creator: Creator;
   description: string | null;
 };
 
@@ -36,14 +34,6 @@ type PuzzleCardProps = {
   /** Receives PATCH responses so parent lists can update in place. */
   onPuzzleUpdated?: (puzzle: PuzzleSummary) => void;
 };
-
-function creatorLabel(creator: PuzzleSummary["creator"]) {
-  if (creator.official) {
-    return "Official";
-  }
-
-  return creator.displayName ?? creator.username;
-}
 
 export function PuzzleCard({
   puzzle,

@@ -27,6 +27,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@components/*": ["./src/components/*"],
+      "@utils/*": ["./src/utils/*"],
       "@wasm/*": ["./pkg/*"]
     }
   },

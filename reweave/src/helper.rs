@@ -278,10 +278,26 @@ pub struct LoadInput {
     pub puzzle_id: String,
 }
 
+/// Full playable puzzle returned by `GET /api/puzzle`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LoadPuzzleOutput {
+    #[serde(flatten)]
+    puzzle: puzzle::Puzzle,
+    creator: PuzzleCreator,
+}
+
 /// Loads a puzzle from persistence or returns an API-safe invalid-ID error.
-pub async fn load_puzzle(inp: LoadInput) -> Result<puzzle::Puzzle, ErrorResponse> {
+pub async fn load_puzzle(inp: LoadInput) -> Result<LoadPuzzleOutput, ErrorResponse> {
     match get_puzzle(&inp.puzzle_id).await {
-        Some(puzzle) => Ok(puzzle),
+        Some(record) => Ok(LoadPuzzleOutput {
+            puzzle: record.puzzle,
+            creator: PuzzleCreator {
+                username: record.creator_username,
+                display_name: record.creator_display_name,
+                official: record.creator_role == "admin",
+            },
+        }),
         None => Err(ErrorResponse(format!(
             "invalid puzzle id: {}",
             &inp.puzzle_id

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { PuzzleCard } from "@/components/PuzzleCard";
 import type { PuzzleSummary } from "@/components/PuzzleCard";
 import { API_URL } from "@/config";
-import { useCurrentUser } from "@/useCurrentUser";
+import { useCurrentUser } from "@utils/useCurrentUser";
 
 import styles from "./Home.module.css";
 

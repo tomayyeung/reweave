@@ -5,7 +5,8 @@ import { useAuth } from "@clerk/react";
 import { PuzzleCard } from "@/components/PuzzleCard";
 import type { PuzzleSummary } from "@/components/PuzzleCard";
 import { API_URL } from "@/config";
-import { useCurrentUser } from "@/useCurrentUser";
+import { useCurrentUser } from "@utils/useCurrentUser";
+import { officialName } from "@utils/creatorLabel";
 
 import styles from "./Profile.module.css";
 
@@ -208,7 +209,9 @@ export default function ProfilePage() {
       setIsEditingDisplayName(false);
     } catch (error) {
       setSaveError(
-        error instanceof Error ? error.message : "Failed to update display name",
+        error instanceof Error
+          ? error.message
+          : "Failed to update display name",
       );
     } finally {
       setSavingDisplayName(false);
@@ -241,7 +244,7 @@ export default function ProfilePage() {
                 <h2 id="profile-title">
                   {profile.user.displayName ?? profile.user.username}
                 </h2>
-                {profile.user.official ? <span>Official</span> : null}
+                {profile.user.official ? <span>{officialName}</span> : null}
                 {isOwnProfile ? (
                   <button
                     type="button"
@@ -298,9 +301,15 @@ export default function ProfilePage() {
                       onPuzzleUpdated={updatePuzzle}
                     />
                     <div className={styles.completionMeta}>
-                      <span>{formatDuration(completion.completionTimeSeconds)}</span>
-                      <span>Completed {formatDate(completion.completedAt)}</span>
-                      {completion.usedHint ? <span>Completed with hints</span> : null}
+                      <span>
+                        {formatDuration(completion.completionTimeSeconds)}
+                      </span>
+                      <span>
+                        Completed {formatDate(completion.completedAt)}
+                      </span>
+                      {completion.usedHint ? (
+                        <span>Completed with hints</span>
+                      ) : null}
                     </div>
                   </div>
                 ))}
