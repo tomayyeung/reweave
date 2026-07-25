@@ -58,6 +58,7 @@
 
 .boardFrame {
   /* Container units let the board fit both wide and tall page layouts. */
+  position: relative;
   container-type: size;
   display: flex;
   inline-size: 100%;
@@ -93,4 +94,19 @@
   border-radius: var(--radius-lg);
   padding: var(--board-padding);
   background: rgb(255 255 255 / 72%);
+}
+
+.mobileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  color: transparent;
+  font-size: 16px;
+  opacity: 0;
+  pointer-events: none;
 }
