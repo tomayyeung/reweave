@@ -5,7 +5,7 @@
 //! function documents its own authorization clause.
 
 use serde::Deserialize;
-use sqlx::{PgPool, Postgres, QueryBuilder};
+use sqlx::{PgPool, Postgres, QueryBuilder, Transaction};
 use std::error::Error;
 use std::sync::OnceLock;
 use uuid::Uuid;
@@ -281,6 +281,30 @@ fn push_where_clause(query: &mut QueryBuilder<Postgres>, has_where: &mut bool) {
     }
 }
 
+/// Sets transaction-local values read by PostgreSQL row-level security policies.
+async fn set_transaction_setting(
+    transaction: &mut Transaction<'_, Postgres>,
+    name: &str,
+    value: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query("SELECT set_config($1, $2, true)")
+        .bind(name)
+        .bind(value)
+        .execute(&mut **transaction)
+        .await?;
+
+    Ok(())
+}
+
+/// Applies authenticated request context for RLS checks in the current transaction.
+async fn set_user_rls_context(
+    transaction: &mut Transaction<'_, Postgres>,
+    user: &AppUser,
+) -> Result<(), sqlx::Error> {
+    set_transaction_setting(transaction, "app.user_id", &user.id.to_string()).await?;
+    set_transaction_setting(transaction, "app.role", &user.role).await
+}
+
 /// Returns the global puzzle database pool.
 ///
 /// # Panics
@@ -324,6 +348,10 @@ pub async fn ensure_app_user(user: ClerkUserData) -> Result<AppUser, Box<dyn Err
         .filter(|username| !username.trim().is_empty())
         .unwrap_or_else(|| fallback_username(&user.clerk_user_id));
 
+    let mut transaction = get_puzzles_pool().begin().await?;
+
+    set_transaction_setting(&mut transaction, "app.clerk_user_id", &user.clerk_user_id).await?;
+
     let (id, username, display_name, role): (Uuid, String, Option<String>, String) = sqlx::query_as(
         "INSERT INTO users (clerk_user_id, username, display_name, avatar_url, email) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (clerk_user_id) DO UPDATE SET username = CASE WHEN $6 AND (users.username = 'user' OR users.username LIKE 'user_%') THEN EXCLUDED.username ELSE users.username END, avatar_url = EXCLUDED.avatar_url, email = EXCLUDED.email, updated_at = now() RETURNING id, username, display_name, role",
     )
@@ -333,8 +361,10 @@ pub async fn ensure_app_user(user: ClerkUserData) -> Result<AppUser, Box<dyn Err
     .bind(user.avatar_url)
     .bind(user.email)
     .bind(has_clerk_username)
-    .fetch_one(get_puzzles_pool())
+    .fetch_one(&mut *transaction)
     .await?;
+
+    transaction.commit().await?;
 
     Ok(AppUser {
         id,
@@ -349,13 +379,19 @@ pub async fn update_user_display_name(
     user_id: Uuid,
     display_name: Option<String>,
 ) -> Result<AppUser, Box<dyn Error>> {
+    let mut transaction = get_puzzles_pool().begin().await?;
+
+    set_transaction_setting(&mut transaction, "app.user_id", &user_id.to_string()).await?;
+
     let (id, username, display_name, role): (Uuid, String, Option<String>, String) = sqlx::query_as(
         "UPDATE users SET display_name = $1, updated_at = now() WHERE id = $2 RETURNING id, username, display_name, role",
     )
     .bind(display_name)
     .bind(user_id)
-    .fetch_one(get_puzzles_pool())
+    .fetch_one(&mut *transaction)
     .await?;
+
+    transaction.commit().await?;
 
     Ok(AppUser {
         id,
@@ -376,6 +412,10 @@ pub async fn update_puzzle_metadata(
     user: &AppUser,
 ) -> Result<Option<PuzzleSummaryRecord>, Box<dyn Error>> {
     let puzzle_id = Uuid::parse_str(puzzle_id)?;
+    let mut transaction = get_puzzles_pool().begin().await?;
+
+    set_user_rls_context(&mut transaction, user).await?;
+
     let row = sqlx::query_as::<_, PuzzleSummaryRow>(
         "UPDATE puzzles p SET name = $1, description = $2 WHERE p.id = $3 AND (p.created_by_user_id = $4 OR $5 = 'admin') RETURNING p.id, p.name, p.description, p.width, p.height, p.letters, COALESCE((SELECT ps.plays FROM puzzle_stats ps WHERE ps.puzzle_id = p.id), 0) AS plays, COALESCE((SELECT ps.completions FROM puzzle_stats ps WHERE ps.puzzle_id = p.id), 0) AS completions, COALESCE((SELECT ps.likes FROM puzzle_stats ps WHERE ps.puzzle_id = p.id), 0) AS likes, p.created_at::text AS created_at, (SELECT u.username FROM users u WHERE u.id = p.created_by_user_id) AS creator_username, (SELECT u.display_name FROM users u WHERE u.id = p.created_by_user_id) AS creator_display_name, (SELECT u.role FROM users u WHERE u.id = p.created_by_user_id) AS creator_role",
     )
@@ -384,8 +424,10 @@ pub async fn update_puzzle_metadata(
     .bind(puzzle_id)
     .bind(user.id)
     .bind(&user.role)
-    .fetch_optional(get_puzzles_pool())
+    .fetch_optional(&mut *transaction)
     .await?;
+
+    transaction.commit().await?;
 
     Ok(row.map(PuzzleSummaryRecord::from))
 }
@@ -533,6 +575,8 @@ pub async fn insert_puzzle_into_db(
     let words: Vec<String> = puzzle.words.iter().cloned().collect();
     let mut transaction = get_puzzles_pool().begin().await?;
 
+    set_user_rls_context(&mut transaction, creator).await?;
+
     let uuid: Uuid = sqlx::query_scalar(
         "INSERT INTO puzzles (name, description, width, height, letters, words, answer, created_by_user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
     )
@@ -580,6 +624,11 @@ pub async fn increment_puzzle_stat(
             used_hint,
         } => {
             let mut transaction = get_puzzles_pool().begin().await?;
+
+            if let Some(user) = user {
+                set_user_rls_context(&mut transaction, user).await?;
+            }
+
             let result = sqlx::query(
                 "UPDATE puzzle_stats SET completions = completions + 1 WHERE puzzle_id = $1",
             )
