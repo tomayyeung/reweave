@@ -59,3 +59,7 @@ path = "api/me.rs"
 [[bin]]
 name = "local-backend"
 path = "src/bin/local_backend.rs"
+
+[[bin]]
+name = "update-puzzle-answers"
+path = "src/bin/update_puzzle_answers.rs"
