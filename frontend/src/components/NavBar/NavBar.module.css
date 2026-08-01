@@ -107,7 +107,6 @@
   /* These classes are passed to Clerk's `appearance.elements` API. */
   width: 2.35rem;
   height: 2.35rem;
-  border: 1px solid var(--border);
   box-shadow: none;
 }
 

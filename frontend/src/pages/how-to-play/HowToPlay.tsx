@@ -57,7 +57,6 @@ export default function HowToPlayPage() {
         </ol>
 
         <ScreenshotContainer title="Play page example">
-          <p>update with: show holes</p>
           <img
             src={"/tutorial/Play.jpeg"}
             alt="Partially completed play puzzle with the word list visible"
@@ -65,7 +64,10 @@ export default function HowToPlayPage() {
         </ScreenshotContainer>
 
         <ScreenshotContainer title="Solved puzzle">
-          <p>solved puzzle</p>
+          <img
+            src={"/tutorial/Play_complete.jpeg"}
+            alt="Completed puzzle with every word in the word list"
+          />
         </ScreenshotContainer>
       </section>
 
@@ -99,13 +101,12 @@ export default function HowToPlayPage() {
             out, while given letters are bolded.
           </li>
           <li>
-            Enter a puzzle name and submit it. Use the generated play link to
-            share your puzzle with your friends!
+            Enter a puzzle name and submit it with an optional description. Use
+            the generated play link to share your puzzle with your friends!
           </li>
         </ol>
 
         <ScreenshotContainer title="Create page setup">
-          <p>update with: show holes</p>
           <img
             src={"/tutorial/Create.jpeg"}
             alt="Create page with generated word list"
